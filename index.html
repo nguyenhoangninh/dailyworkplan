@@ -6,106 +6,128 @@
     <title>Master Work Plan - Realtime</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; }
-        table { border-collapse: collapse; width: 100%; white-space: nowrap; }
-        th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
-        th { background-color: #1e293b; color: white; text-align: center; font-weight: bold; border: 1px solid #334155; }
+        /* Phông chữ chuẩn Apple */
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; background-color: #f4f5f8; color: #1d1d1f; }
+        
+        /* Bảng thiết kế hiện đại, ẩn viền dọc */
+        table { border-collapse: separate; border-spacing: 0; width: 100%; white-space: nowrap; }
+        th, td { border-bottom: 1px solid #f0f0f0; padding: 12px 14px; text-align: left; vertical-align: middle; }
+        
+        /* Header bảng trong suốt có làm mờ (Backdrop Blur) */
+        th { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); color: #86868b; text-align: center; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e5ea; position: sticky; top: 0; z-index: 20; }
         .text-center { text-align: center; }
         
-        .task-name-col { min-width: 250px; max-width: 350px; white-space: normal; word-wrap: break-word; line-height: 1.4; }
+        /* Thu gọn cột Task Name */
+        .task-name-col { min-width: 250px; max-width: 320px; white-space: normal; word-wrap: break-word; line-height: 1.5; }
         
-        .text-status-complete { color: #047857; font-weight: 600; background-color: #d1fae5; }
-        .text-status-inprogress { color: #b45309; font-weight: 600; background-color: #fef3c7; }
-        .text-status-pending { color: #be123c; font-weight: 600; background-color: #ffe4e6; }
-        .text-status-notstart { color: #475569; font-weight: 600; background-color: #f1f5f9; }
+        /* Màu sắc Gantt tươi trẻ (Flat UI) */
+        .gantt-cell { border-right: 1px solid #f9f9f9; border-left: 1px solid #f9f9f9; }
+        .gantt-complete { background-color: #34c759 !important; } /* iOS Green */
+        .gantt-inprogress { background-color: #ff9f0a !important; } /* iOS Orange */
+        .gantt-pending { background-color: #ff3b30 !important; } /* iOS Red */
+        .gantt-notstart { background-color: #e5e5ea !important; } /* Gray */
         
-        .gantt-complete { background-color: #10b981 !important; } 
-        .gantt-inprogress { background-color: #f59e0b !important; } 
-        .gantt-pending { background-color: #f43f5e !important; } 
-        .gantt-notstart { background-color: #cbd5e1 !important; } 
+        /* Mốc Today (Apple Style - Subtle Red tint) */
+        .today-col { background-color: rgba(255, 59, 48, 0.05) !important; border-left: 1px solid rgba(255, 59, 48, 0.3) !important; border-right: 1px solid rgba(255, 59, 48, 0.3) !important; }
+        .today-head { color: #ff3b30 !important; font-weight: 800 !important; background-color: rgba(255, 59, 48, 0.08) !important; border-bottom: 2px solid #ff3b30 !important; }
         
-        .today-col { border-left: 2px dashed #ef4444 !important; border-right: 2px dashed #ef4444 !important; background-color: rgba(239, 68, 68, 0.05); }
-        .today-head { border-left: 2px dashed #ef4444 !important; border-right: 2px dashed #ef4444 !important; background-color: #fee2e2 !important; color: #b91c1c !important; }
+        .bg-weekend-head { background-color: #fafafa !important; color: #d2d2d7; } 
+        .bg-weekend-body { background-color: #fafafa !important; } 
         
-        .bg-weekend-head { background-color: #334155 !important; color: #cbd5e1; } 
-        .bg-weekend-body { background-color: #f8fafc; } 
+        /* Khung chứa bảng bo góc */
+        .table-container { overflow-x: auto; max-width: 100%; border: 1px solid #e5e5ea; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 16px; background: white; }
+        .sticky-col { position: sticky; left: 0; background-color: rgba(255, 255, 255, 0.95); z-index: 10; border-right: 1px solid #e5e5ea;}
+        th.sticky-col { z-index: 21; }
         
-        .table-container { overflow-x: auto; max-width: 100%; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .sticky-col { position: sticky; left: 0; background-color: white; z-index: 10; border-right: 2px solid #94a3b8;}
-        th.sticky-col { background-color: #1e293b; z-index: 11; }
+        /* Input & Select phong cách iOS */
+        input, select { border: 1px solid #d2d2d7; padding: 8px 12px; border-radius: 10px; font-size: 13px; outline: none; background-color: #fafafa; transition: border-color 0.2s; }
+        input:focus, select:focus { border-color: #007aff; background-color: white; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1); }
         
-        /* Khoảng trắng phân tách Main Tasks */
-        .spacer-row { border-top: 16px solid #f1f5f9 !important; }
+        /* Tab Segmented Control (Apple UI) */
+        .tabs-container { display: inline-flex; background: #e5e5ea; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
+        .tab-btn { padding: 8px 24px; font-weight: 600; cursor: pointer; color: #86868b; transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); border-radius: 8px; font-size: 13px;}
+        .tab-btn.active { background: white; color: #1d1d1f; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .tab-btn:hover:not(.active) { color: #1d1d1f; }
         
-        input, select { border: 1px solid #ccc; padding: 7px; border-radius: 4px; font-size: 13px; outline: none; }
-        input:focus, select:focus { border-color: #1e293b; }
+        /* Nút bấm (Buttons) */
+        .btn-primary { background: #007aff; color: white; border-radius: 10px; font-weight: 600; padding: 8px 16px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0, 122, 255, 0.3); }
+        .btn-primary:hover { background: #006ce6; transform: scale(0.98); }
         
-        .tab-btn { padding: 10px 24px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; color: #64748b; transition: all 0.3s; }
-        .tab-btn.active { border-bottom: 3px solid #1e293b; color: #1e293b; background-color: #f1f5f9; }
-        .tab-btn:hover { background-color: #f8fafc; }
+        /* Nút Hành động nhỏ trong bảng */
+        .action-btn { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; transition: background 0.2s; cursor: pointer; }
+        .btn-edit { color: #007aff; background: rgba(0, 122, 255, 0.1); } .btn-edit:hover { background: rgba(0, 122, 255, 0.2); }
+        .btn-delete { color: #ff3b30; background: rgba(255, 59, 48, 0.1); } .btn-delete:hover { background: rgba(255, 59, 48, 0.2); }
+        .btn-addsub { color: #34c759; background: rgba(52, 199, 89, 0.1); } .btn-addsub:hover { background: rgba(52, 199, 89, 0.2); }
+        .btn-archive { color: #5856d6; background: rgba(88, 86, 214, 0.1); } .btn-archive:hover { background: rgba(88, 86, 214, 0.2); }
+        
+        /* Khoảng trắng giữa các Main Task */
+        .spacer-row td { height: 32px; background-color: #ffffff; border: none !important; }
     </style>
 </head>
-<body class="bg-gray-100 p-4 min-h-screen">
+<body class="p-6">
 
-    <div class="max-w-[98%] mx-auto bg-white p-5 rounded shadow-lg border-t-4 border-slate-800">
-        <h1 class="text-2xl font-bold text-slate-800 mb-6 uppercase tracking-wider">MASTER WORK PLAN - REALTIME DATABASE</h1>
+    <div class="max-w-[98%] mx-auto bg-white p-8 rounded-2xl shadow-sm border border-[#e5e5ea]">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-[#1d1d1f] tracking-tight">Master Work Plan</h1>
+            
+            <!-- TABS NAV (Segmented Control) -->
+            <div class="tabs-container">
+                <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">SVL</div>
+                <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">SGV</div>
+                <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">SVN</div>
+                <div id="tab-DASHBOARD" class="tab-btn text-[#af52de]" onclick="switchTab('DASHBOARD')">Báo cáo & Gantt</div>
+                <div id="tab-DONE" class="tab-btn text-[#34c759]" onclick="switchTab('DONE')">Đã lưu trữ</div>
+            </div>
+        </div>
         
         <!-- FORM TẠO NHANH -->
-        <div class="flex flex-wrap gap-4 items-end bg-slate-50 p-4 rounded border border-slate-200 mb-6 shadow-sm">
+        <div class="flex flex-wrap gap-4 items-end bg-[#f4f5f8] p-5 rounded-[16px] mb-8 border border-[#e5e5ea]">
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Công ty</label>
-                <select id="q_company" class="w-24 font-bold text-slate-800">
+                <label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Công ty</label>
+                <select id="q_company" class="w-24 font-semibold text-[#1d1d1f]">
                     <option value="SVL">SVL</option>
                     <option value="SGV">SGV</option>
                     <option value="SVN">SVN</option>
                 </select>
             </div>
             <div class="flex-1 min-w-[250px]">
-                <label class="block text-xs font-bold text-slate-700 mb-1">Tên Công Việc Chính</label>
+                <label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Tên Công Việc Chính</label>
                 <input type="text" id="q_name" placeholder="Nhập tên công việc..." class="w-full">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Từ ngày</label>
+                <label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Từ ngày</label>
                 <input type="date" id="q_start" class="w-36">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Đến ngày</label>
+                <label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Đến ngày</label>
                 <input type="date" id="q_due" class="w-36">
             </div>
-            <button onclick="quickAddMainTask()" class="bg-slate-700 text-white font-bold px-6 py-[9px] rounded shadow hover:bg-slate-800 transition-colors">
-                + TẠO CÔNG VIỆC
+            <button onclick="quickAddMainTask()" class="btn-primary flex items-center gap-1 mb-[2px]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                Tạo mới
             </button>
         </div>
 
-        <!-- TABS NAV -->
-        <div class="flex space-x-1 border-b border-slate-300 mb-5">
-            <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">SVL</div>
-            <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">SGV</div>
-            <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">SVN</div>
-            <div id="tab-DASHBOARD" class="tab-btn text-purple-700" onclick="switchTab('DASHBOARD')">BÁO CÁO TỔNG</div>
-            <div id="tab-DONE" class="tab-btn text-emerald-700 ml-auto" onclick="switchTab('DONE')">LƯU TRỮ (DONE)</div>
-        </div>
-
         <!-- BỘ LỌC DASHBOARD (Ẩn/Hiện tự động) -->
-        <div id="dashboardFilters" class="hidden flex gap-4 flex-wrap items-end bg-purple-50 p-4 rounded border border-purple-200 mb-4">
-            <div><label class="block text-xs font-bold text-slate-600 mb-1">Từ ngày</label><input type="date" id="filterStart"></div>
-            <div><label class="block text-xs font-bold text-slate-600 mb-1">Đến ngày</label><input type="date" id="filterEnd"></div>
-            <div><label class="block text-xs font-bold text-slate-600 mb-1">Trạng thái</label>
-                <select id="filterStatus" class="w-40">
+        <div id="dashboardFilters" class="hidden flex gap-4 flex-wrap items-end bg-[#f4f5f8] p-5 rounded-[16px] mb-6 border border-[#e5e5ea]">
+            <div><label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Từ ngày</label><input type="date" id="filterStart"></div>
+            <div><label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Đến ngày</label><input type="date" id="filterEnd"></div>
+            <div><label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Trạng thái</label>
+                <select id="filterStatus" class="w-40 font-semibold">
                     <option value="ALL">Tất cả</option>
                     <option value="Complete">Hoàn thành</option>
                     <option value="Incomplete">Chưa hoàn thành</option>
                 </select>
             </div>
-            <button onclick="renderView()" class="bg-purple-600 text-white font-bold px-6 py-[9px] rounded shadow hover:bg-purple-700">LỌC DỮ LIỆU</button>
+            <button onclick="renderView()" class="btn-primary bg-[#af52de] shadow-none hover:bg-[#9a41c2] mb-[2px]">Lọc dữ liệu</button>
         </div>
 
         <!-- CHÚ GIẢI GANTT -->
-        <div class="flex gap-4 text-xs font-bold items-center mb-2 justify-end text-slate-600">
-            <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#10b981] rounded-sm"></span> Complete</span>
-            <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#f59e0b] rounded-sm"></span> In Progress</span>
-            <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#f43f5e] rounded-sm"></span> Pending</span>
-            <span class="flex items-center gap-1 border-l-2 border-dashed border-red-500 pl-2 text-red-600">Today Marker</span>
+        <div class="flex gap-4 text-xs font-semibold items-center mb-3 justify-end text-[#86868b]">
+            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 bg-[#34c759] rounded-full"></span> Complete</span>
+            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 bg-[#ff9f0a] rounded-full"></span> In Progress</span>
+            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 bg-[#ff3b30] rounded-full"></span> Pending</span>
+            <span class="flex items-center gap-1.5 border-l border-[#d2d2d7] pl-3"><span class="inline-block w-3 h-3 bg-[rgba(255,59,48,0.2)] border border-[#ff3b30] rounded-full"></span> Today Marker</span>
         </div>
 
         <!-- UNIFIED TABLE CHO TẤT CẢ CÁC TAB -->
@@ -118,28 +140,28 @@
     </div>
 
     <!-- MODAL THÊM/SỬA TASK -->
-    <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-[500px]">
-            <h3 id="modalTitle" class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Thông tin Công Việc</h3>
-            <div class="space-y-4">
+    <div id="taskModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-[500px] border border-[#e5e5ea]">
+            <h3 id="modalTitle" class="text-xl font-bold text-[#1d1d1f] mb-6">Thông tin Công Việc</h3>
+            <div class="space-y-5">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Tên công việc <span class="text-red-500">*</span></label>
+                    <label class="block text-[12px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Tên công việc <span class="text-[#ff3b30]">*</span></label>
                     <input type="text" id="m_name" class="w-full">
                 </div>
                 <div class="flex gap-4">
                     <div class="w-1/2">
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Start Date <span class="text-red-500">*</span></label>
+                        <label class="block text-[12px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Bắt đầu <span class="text-[#ff3b30]">*</span></label>
                         <input type="date" id="m_start" class="w-full">
                     </div>
                     <div class="w-1/2">
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Due Date <span class="text-red-500">*</span></label>
+                        <label class="block text-[12px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Kết thúc <span class="text-[#ff3b30]">*</span></label>
                         <input type="date" id="m_due" class="w-full">
                     </div>
                 </div>
                 <div id="statusControlBox" class="flex gap-4">
                     <div class="w-full">
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Trạng thái (Tỷ lệ % tự động hóa)</label>
-                        <select id="m_status" class="w-full bg-slate-50 font-semibold border-slate-300">
+                        <label class="block text-[12px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Trạng thái Sub-task</label>
+                        <select id="m_status" class="w-full font-semibold bg-[#fafafa]">
                             <option value="Not Start">Not Start (0%)</option>
                             <option value="Pending">Pending (25%)</option>
                             <option value="In Progress">In Progress (50%)</option>
@@ -147,13 +169,14 @@
                         </select>
                     </div>
                 </div>
-                <div id="mainTaskWarning" class="hidden text-sm italic text-slate-500 bg-slate-100 p-2 rounded border border-slate-200">
-                    * Trạng thái và % của Main Task được tính tự động dựa trên các Sub-task con.
+                <div id="mainTaskWarning" class="hidden text-[12px] font-medium text-[#86868b] bg-[#f4f5f8] p-3 rounded-xl border border-[#e5e5ea] flex items-start gap-2">
+                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-[#007aff]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Trạng thái và tiến độ của Công việc Chính (Main Task) được tính toán tự động dựa trên tổng các Sub-task con.</span>
                 </div>
             </div>
-            <div class="mt-6 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-5 py-2 bg-slate-300 text-slate-800 rounded font-bold hover:bg-slate-400">HỦY</button>
-                <button onclick="saveTaskModal()" class="px-5 py-2 bg-slate-700 text-white rounded font-bold hover:bg-slate-800">LƯU LẠI</button>
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-5 py-2.5 bg-[#f4f5f8] text-[#1d1d1f] rounded-xl font-bold hover:bg-[#e5e5ea] transition-colors">Hủy Bỏ</button>
+                <button onclick="saveTaskModal()" class="px-6 py-2.5 bg-[#007aff] text-white rounded-xl font-bold hover:bg-[#006ce6] transition-colors shadow-md">Lưu Lại</button>
             </div>
         </div>
     </div>
@@ -183,7 +206,6 @@
         window.currentTab = 'SVL';
         window.modalState = { mode: '', parentId: null, dbKey: null, isMain: false };
 
-        // LẮNG NGHE DỮ LIỆU
         onValue(tasksRef, (snapshot) => {
             window.allTasks = [];
             snapshot.forEach((child) => { window.allTasks.push({ dbKey: child.key, ...child.val() }); });
@@ -207,15 +229,12 @@
             
             if(tabName === 'DASHBOARD') {
                 document.getElementById('dashboardFilters').classList.remove('hidden');
-                document.getElementById('dashboardFilters').classList.add('flex');
             } else {
                 document.getElementById('dashboardFilters').classList.add('hidden');
-                document.getElementById('dashboardFilters').classList.remove('flex');
             }
             renderView();
         };
 
-        // TÍNH TOÁN DATA
         function getProcessedTasks() {
             let showDone = (window.currentTab === 'DONE');
             let processed = JSON.parse(JSON.stringify(window.allTasks)); 
@@ -225,21 +244,18 @@
                 processed = processed.filter(t => t.company === window.currentTab);
             }
 
-            // Lọc phụ cho Dashboard
             if(window.currentTab === 'DASHBOARD') {
                 let fStatus = document.getElementById('filterStatus').value;
                 if(fStatus === 'Complete') processed = processed.filter(t => t.progressSub == 100 || (t.status === 'Complete'));
                 if(fStatus === 'Incomplete') processed = processed.filter(t => t.progressSub < 100 && t.status !== 'Complete');
             }
 
-            // Ép % cho Sub
             processed.forEach(task => {
                 if(task.taskId && task.taskId.includes('.')) {
                     task.progressSub = STATUS_MAP[task.status] !== undefined ? STATUS_MAP[task.status] : 0;
                 }
             });
 
-            // Tính % cho Main
             processed.forEach(task => {
                 if(!task.taskId.includes('.')) {
                     let subs = processed.filter(t => t.taskId.startsWith(task.taskId + '.'));
@@ -261,12 +277,11 @@
             return processed;
         }
 
-        // HÀM HELPER 
-        function getStatusClass(status) {
-            if(status === 'Complete') return 'text-status-complete';
-            if(status === 'In Progress') return 'text-status-inprogress';
-            if(status === 'Pending') return 'text-status-pending';
-            return 'text-status-notstart';
+        function getStatusPill(status) {
+            if(status === 'Complete') return '<span class="bg-[#d1fae5] text-[#047857] px-3 py-1 rounded-full text-[11px] font-bold">Complete</span>';
+            if(status === 'In Progress') return '<span class="bg-[#fef3c7] text-[#b45309] px-3 py-1 rounded-full text-[11px] font-bold">In Progress</span>';
+            if(status === 'Pending') return '<span class="bg-[#ffe4e6] text-[#be123c] px-3 py-1 rounded-full text-[11px] font-bold">Pending</span>';
+            return '<span class="bg-[#f1f5f9] text-[#475569] px-3 py-1 rounded-full text-[11px] font-bold">Not Start</span>';
         }
         function getGanttClass(status) {
             if(status === 'Complete') return 'gantt-complete';
@@ -275,7 +290,6 @@
             return 'gantt-notstart';
         }
 
-        // VẼ TOÀN BỘ UI (GỘP CHUNG LIST VÀ GANTT)
         window.renderView = function() {
             let isDashboard = (window.currentTab === 'DASHBOARD');
             let isDoneTab = (window.currentTab === 'DONE');
@@ -286,14 +300,13 @@
             thead.innerHTML = ''; tbody.innerHTML = '';
             
             if(tasks.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="100%" class="text-center p-6 text-slate-500 italic">Không có dữ liệu trong danh sách này.</td></tr>`; 
+                tbody.innerHTML = `<tr><td colspan="100%" class="text-center py-12 text-[#86868b] text-sm">Danh sách trống. Tạo công việc mới để bắt đầu.</td></tr>`; 
                 return; 
             }
 
             let today = new Date();
             today.setHours(0,0,0,0);
 
-            // XÁC ĐỊNH DATE RANGE
             let minDate = new Date("2099-12-31");
             let maxDate = new Date("1900-01-01");
             let fStart = isDashboard ? document.getElementById('filterStart').value : null;
@@ -312,7 +325,6 @@
             }
             if(minDate > maxDate) { minDate = new Date(); maxDate = new Date(); }
             
-            // Ép Today Marker luôn nằm trong vùng render nếu thuộc tháng
             if(today < minDate && !fStart) minDate = new Date(today);
             if(today > maxDate && !fEnd) maxDate = new Date(today);
 
@@ -320,40 +332,37 @@
             let curr = new Date(minDate);
             while(curr <= maxDate) { dateRange.push(new Date(curr)); curr.setDate(curr.getDate() + 1); }
 
-            // VẼ HEADER
             let showCompCol = (isDashboard || isDoneTab);
             let trDay = `<tr>`;
-            if(showCompCol) trDay += `<th rowspan="2" class="sticky-col">Comp</th>`;
+            if(showCompCol) trDay += `<th rowspan="2" class="sticky-col">Cty</th>`;
             
-            trDay += `<th rowspan="2">#</th>
+            trDay += `<th rowspan="2" class="w-16">#</th>
                       <th rowspan="2" class="task-name-col">Task Name</th>
-                      <th rowspan="2" class="w-24">Start Date</th>
-                      <th rowspan="2" class="w-24">Due Date</th>
-                      <th rowspan="2" class="w-12">Days</th>
-                      <th rowspan="2" class="w-24">Status</th>
-                      <th rowspan="2" class="w-16">Prog %</th>
-                      <th rowspan="2" class="w-40">Hành động</th>`;
+                      <th rowspan="2" class="w-24">Bắt Đầu</th>
+                      <th rowspan="2" class="w-24">Kết Thúc</th>
+                      <th rowspan="2" class="w-12">Ngày</th>
+                      <th rowspan="2" class="w-28">Status</th>
+                      <th rowspan="2" class="w-16">%</th>
+                      <th rowspan="2" class="w-48">Hành động</th>`;
                       
             let trDate = `<tr>`;
             dateRange.forEach(d => {
                 let isW = (d.getDay()===0 || d.getDay()===6) ? "bg-weekend-head" : "";
                 let isT = (d.getTime() === today.getTime()) ? "today-head" : "";
-                trDay += `<th class="${isW} ${isT}">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]}</th>`;
-                trDate += `<th class="${isW} ${isT}">${d.getDate() + "/" + (d.getMonth()+1)}</th>`;
+                trDay += `<th class="gantt-cell ${isW} ${isT}">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]}</th>`;
+                trDate += `<th class="gantt-cell ${isW} ${isT}">${d.getDate() + "/" + (d.getMonth()+1)}</th>`;
             });
             thead.innerHTML = trDay + "</tr>" + trDate + "</tr>";
 
-            // VẼ BODY
             let lastMainId = null;
             
             tasks.forEach(task => {
                 let currentMainId = task.taskId.split('.')[0];
                 let isMain = !task.taskId.includes('.');
                 
-                // CHÈN KHOẢNG TRẮNG GIỮA CÁC MAIN TASK
-                let spacerClass = "";
+                // CHÈN KHOẢNG TRẮNG GIỮA CÁC MAIN TASK (Yêu cầu làm rõ phân cách)
                 if(isMain && lastMainId !== null && currentMainId !== lastMainId) {
-                    spacerClass = "spacer-row";
+                    tbody.innerHTML += `<tr class="spacer-row"><td colspan="100%"></td></tr>`;
                 }
                 if(isMain) lastMainId = currentMainId;
 
@@ -366,33 +375,37 @@
                 let sShow = sDate ? ("0"+sDate.getDate()).slice(-2)+"/"+("0"+(sDate.getMonth()+1)).slice(-2)+"/"+sDate.getFullYear() : '';
                 let dShow = dDate ? ("0"+dDate.getDate()).slice(-2)+"/"+("0"+(dDate.getMonth()+1)).slice(-2)+"/"+dDate.getFullYear() : '';
 
-                let stTextClass = getStatusClass(task.status);
+                let stPill = getStatusPill(task.status);
                 let stGanttClass = getGanttClass(task.status);
-                let indent = isMain ? 'font-bold text-[14px] text-slate-800' : 'pl-8 text-slate-600';
                 
-                // Khung Hành Động
-                let actionBtns = `<button onclick="editTask('${task.dbKey}')" class="text-blue-600 hover:text-blue-800 font-semibold mr-2">Sửa</button>
-                                  <button onclick="deleteTask('${task.dbKey}', '${task.taskId}')" class="text-red-500 hover:text-red-700 font-semibold mr-2">Xóa</button>`;
+                // THIẾT KẾ BADGE KHOANH TRÒN CHO MAIN TASK
+                let badge = isMain 
+                    ? `<div class="w-7 h-7 mx-auto rounded-full bg-[#007aff] text-white flex items-center justify-center text-[11px] font-bold shadow-md">${task.taskId}</div>` 
+                    : `<span class="text-[#86868b] text-[12px] font-bold">${task.taskId}</span>`;
+
+                let indent = isMain ? 'font-bold text-[13px] text-[#1d1d1f]' : 'pl-8 text-[#475569]';
+                
+                // Khung Hành Động Bo Tròn
+                let actionBtns = `<button onclick="editTask('${task.dbKey}')" class="action-btn btn-edit mr-1">Sửa</button>
+                                  <button onclick="deleteTask('${task.dbKey}', '${task.taskId}')" class="action-btn btn-delete mr-1">Xóa</button>`;
                 
                 if(isMain && !isDoneTab) {
-                    actionBtns += `<button onclick="openModal('${task.taskId}')" class="text-emerald-600 hover:text-emerald-800 font-semibold mr-2">+Sub</button>`;
-                    actionBtns += `<button onclick="archiveTask('${task.taskId}', '${task.company}')" class="text-blue-500 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded font-bold text-xs" title="Lưu trữ công việc này">Lưu 📥</button>`;
+                    actionBtns += `<button onclick="openModal('${task.taskId}')" class="action-btn btn-addsub mr-1">+ Sub</button>`;
+                    actionBtns += `<button onclick="archiveTask('${task.taskId}', '${task.company}')" class="action-btn btn-archive" title="Lưu trữ">Lưu 📥</button>`;
                 }
-                if(isMain && isDoneTab) {
-                     actionBtns += `<span class="text-emerald-700 font-bold text-xs">Đã Lưu</span>`;
-                }
+                if(isMain && isDoneTab) { actionBtns += `<span class="text-[#34c759] font-bold text-[11px]">Đã Lưu</span>`; }
 
-                let rowHtml = `<tr class="hover:bg-slate-50 border-b border-slate-200 ${spacerClass}">`;
-                if(showCompCol) rowHtml += `<td class="sticky-col bg-white text-center font-bold text-slate-800">${task.company}</td>`;
+                let rowHtml = `<tr class="hover:bg-[#f9f9f9] transition-colors">`;
+                if(showCompCol) rowHtml += `<td class="sticky-col bg-white text-center font-bold text-[#86868b]">${task.company}</td>`;
                 
                 rowHtml += `
-                    <td class="text-center font-bold text-slate-600">${task.taskId}</td>
-                    <td class="task-name-col ${indent}">${isMain ? '' : '↳ '}${task.name}</td>
-                    <td class="text-center">${sShow}</td>
-                    <td class="text-center">${dShow}</td>
-                    <td class="text-center">${daysCount}</td>
-                    <td class="text-center ${stTextClass}">${task.status}</td>
-                    <td class="text-center font-bold ${stTextClass}">${task.progressSub}%</td>
+                    <td class="text-center">${badge}</td>
+                    <td class="task-name-col ${indent}">${isMain ? '' : '<span class="text-[#d2d2d7] mr-1">↳</span>'}${task.name}</td>
+                    <td class="text-center text-[#475569] font-medium">${sShow}</td>
+                    <td class="text-center text-[#475569] font-medium">${dShow}</td>
+                    <td class="text-center font-bold text-[#86868b]">${daysCount}</td>
+                    <td class="text-center">${stPill}</td>
+                    <td class="text-center font-bold text-[#1d1d1f]">${task.progressSub}%</td>
                     <td class="text-center whitespace-nowrap">${actionBtns}</td>`;
 
                 // VẼ Ô GANTT
@@ -402,14 +415,13 @@
                     let isT = (dTime === today.getTime()) ? "today-col" : "";
                     
                     let cellClass = isTaskDay ? stGanttClass : ((d.getDay()===0 || d.getDay()===6) ? "bg-weekend-body" : "");
-                    rowHtml += `<td class="${cellClass} ${isT}"></td>`;
+                    rowHtml += `<td class="gantt-cell ${cellClass} ${isT}"></td>`;
                 });
                 
                 tbody.innerHTML += rowHtml + `</tr>`;
             });
         }
 
-        // TẠO NHANH MAIN TASK
         window.quickAddMainTask = function() {
             let comp = document.getElementById('q_company').value;
             let name = document.getElementById('q_name').value.trim();
@@ -425,7 +437,6 @@
             switchTab(comp); 
         }
 
-        // LƯU TRỮ (ARCHIVE)
         window.archiveTask = function(taskId, comp) {
             if(confirm("Lưu công việc này? (Nó và các Sub-task sẽ được chuyển qua tab LƯU TRỮ)")) {
                 let toArchive = window.allTasks.filter(t => t.company === comp && (t.taskId === taskId || t.taskId.startsWith(taskId + '.')));
@@ -433,7 +444,6 @@
             }
         }
 
-        // SINH MÃ TASK
         function getNextTaskId(company, parentId = null) {
             let compTasks = window.allTasks.filter(t => t.company === company);
             if(!parentId) { 
@@ -449,10 +459,9 @@
             }
         }
 
-        // MODAL HANDLERS
         window.openModal = function(parentId = null) {
             window.modalState = { mode: 'ADD', parentId: parentId, dbKey: null, isMain: !parentId };
-            document.getElementById('modalTitle').innerText = `Thêm Sub-task cho Công việc ${parentId}`;
+            document.getElementById('modalTitle').innerText = `Thêm Sub-task (Tạo cho ID: ${parentId})`;
             document.getElementById('m_name').value = ''; document.getElementById('m_start').value = ''; document.getElementById('m_due').value = ''; document.getElementById('m_status').value = 'Not Start';
             
             document.getElementById('statusControlBox').classList.remove('hidden');
@@ -466,15 +475,17 @@
             let isMain = !task.taskId.includes('.');
             window.modalState = { mode: 'EDIT', parentId: null, dbKey: dbKey, isMain: isMain };
             
-            document.getElementById('modalTitle').innerText = `Sửa Thông tin: Task ${task.taskId}`;
+            document.getElementById('modalTitle').innerText = `Chỉnh sửa Task ${task.taskId}`;
             document.getElementById('m_name').value = task.name; document.getElementById('m_start').value = task.startDate; document.getElementById('m_due').value = task.dueDate; document.getElementById('m_status').value = task.status;
             
             if(isMain) {
                 document.getElementById('statusControlBox').classList.add('hidden');
                 document.getElementById('mainTaskWarning').classList.remove('hidden');
+                document.getElementById('mainTaskWarning').classList.add('flex');
             } else {
                 document.getElementById('statusControlBox').classList.remove('hidden');
                 document.getElementById('mainTaskWarning').classList.add('hidden');
+                document.getElementById('mainTaskWarning').classList.remove('flex');
             }
             document.getElementById('taskModal').classList.remove('hidden');
         };
