@@ -12,22 +12,18 @@
         th { background-color: #1e293b; color: white; text-align: center; font-weight: bold; border: 1px solid #334155; }
         .text-center { text-align: center; }
         
-        /* Thu gọn cột Task Name và cho phép ngắt dòng */
         .task-name-col { min-width: 250px; max-width: 350px; white-space: normal; word-wrap: break-word; line-height: 1.4; }
         
-        /* Màu trạng thái text cho bảng công việc */
         .text-status-complete { color: #047857; font-weight: 600; background-color: #d1fae5; }
         .text-status-inprogress { color: #b45309; font-weight: 600; background-color: #fef3c7; }
         .text-status-pending { color: #be123c; font-weight: 600; background-color: #ffe4e6; }
         .text-status-notstart { color: #475569; font-weight: 600; background-color: #f1f5f9; }
         
-        /* MÀU BIỂU ĐỒ GANTT (Phẳng & Hiện đại) */
-        .gantt-complete { background-color: #10b981 !important; } /* Xanh ngọc */
-        .gantt-inprogress { background-color: #f59e0b !important; } /* Vàng hổ phách */
-        .gantt-pending { background-color: #f43f5e !important; } /* Đỏ hồng */
-        .gantt-notstart { background-color: #cbd5e1 !important; } /* Xám nhạt */
+        .gantt-complete { background-color: #10b981 !important; } 
+        .gantt-inprogress { background-color: #f59e0b !important; } 
+        .gantt-pending { background-color: #f43f5e !important; } 
+        .gantt-notstart { background-color: #cbd5e1 !important; } 
         
-        /* Line đánh dấu ngày Hiện tại (Today Marker) */
         .today-col { border-left: 2px dashed #ef4444 !important; border-right: 2px dashed #ef4444 !important; background-color: rgba(239, 68, 68, 0.05); }
         .today-head { border-left: 2px dashed #ef4444 !important; border-right: 2px dashed #ef4444 !important; background-color: #fee2e2 !important; color: #b91c1c !important; }
         
@@ -37,6 +33,9 @@
         .table-container { overflow-x: auto; max-width: 100%; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .sticky-col { position: sticky; left: 0; background-color: white; z-index: 10; border-right: 2px solid #94a3b8;}
         th.sticky-col { background-color: #1e293b; z-index: 11; }
+        
+        /* Khoảng trắng phân tách Main Tasks */
+        .spacer-row { border-top: 16px solid #f1f5f9 !important; }
         
         input, select { border: 1px solid #ccc; padding: 7px; border-radius: 4px; font-size: 13px; outline: none; }
         input:focus, select:focus { border-color: #1e293b; }
@@ -83,58 +82,38 @@
             <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">SVL</div>
             <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">SGV</div>
             <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">SVN</div>
-            <div id="tab-DASHBOARD" class="tab-btn text-purple-700" onclick="switchTab('DASHBOARD')">BÁO CÁO & GANTT</div>
+            <div id="tab-DASHBOARD" class="tab-btn text-purple-700" onclick="switchTab('DASHBOARD')">BÁO CÁO TỔNG</div>
             <div id="tab-DONE" class="tab-btn text-emerald-700 ml-auto" onclick="switchTab('DONE')">LƯU TRỮ (DONE)</div>
         </div>
 
-        <!-- VIEWS: COMPANY & ARCHIVE -->
-        <div id="view-company" class="block">
-            <div class="table-container">
-                <table id="compTable">
-                    <thead>
-                        <tr>
-                            <th class="w-12">Task #</th>
-                            <th class="task-name-col">Task Name</th>
-                            <th class="w-24">Start Date</th>
-                            <th class="w-24">Due Date</th>
-                            <th class="w-16">Days</th>
-                            <th class="w-28">Status</th>
-                            <th class="w-20">Prog %</th>
-                            <th class="w-48">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="compBody"></tbody>
-                </table>
+        <!-- BỘ LỌC DASHBOARD (Ẩn/Hiện tự động) -->
+        <div id="dashboardFilters" class="hidden flex gap-4 flex-wrap items-end bg-purple-50 p-4 rounded border border-purple-200 mb-4">
+            <div><label class="block text-xs font-bold text-slate-600 mb-1">Từ ngày</label><input type="date" id="filterStart"></div>
+            <div><label class="block text-xs font-bold text-slate-600 mb-1">Đến ngày</label><input type="date" id="filterEnd"></div>
+            <div><label class="block text-xs font-bold text-slate-600 mb-1">Trạng thái</label>
+                <select id="filterStatus" class="w-40">
+                    <option value="ALL">Tất cả</option>
+                    <option value="Complete">Hoàn thành</option>
+                    <option value="Incomplete">Chưa hoàn thành</option>
+                </select>
             </div>
+            <button onclick="renderView()" class="bg-purple-600 text-white font-bold px-6 py-[9px] rounded shadow hover:bg-purple-700">LỌC DỮ LIỆU</button>
         </div>
 
-        <!-- VIEWS: DASHBOARD -->
-        <div id="view-dashboard" class="hidden">
-            <div class="flex gap-4 flex-wrap items-end bg-purple-50 p-4 rounded border border-purple-200 mb-4">
-                <div><label class="block text-xs font-bold text-slate-600 mb-1">Từ ngày</label><input type="date" id="filterStart"></div>
-                <div><label class="block text-xs font-bold text-slate-600 mb-1">Đến ngày</label><input type="date" id="filterEnd"></div>
-                <div><label class="block text-xs font-bold text-slate-600 mb-1">Trạng thái</label>
-                    <select id="filterStatus" class="w-40">
-                        <option value="ALL">Tất cả</option>
-                        <option value="Complete">Hoàn thành</option>
-                        <option value="Incomplete">Chưa hoàn thành</option>
-                    </select>
-                </div>
-                <button onclick="renderDashboard()" class="bg-purple-600 text-white font-bold px-6 py-[9px] rounded shadow hover:bg-purple-700">LỌC DỮ LIỆU</button>
-                
-                <div class="ml-auto flex gap-3 text-xs font-bold items-center">
-                    <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#10b981] rounded-sm"></span> Complete</span>
-                    <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#f59e0b] rounded-sm"></span> In Progress</span>
-                    <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#f43f5e] rounded-sm"></span> Pending</span>
-                    <span class="flex items-center gap-1 border-l-2 border-dashed border-red-500 pl-2 text-red-600">Today Marker</span>
-                </div>
-            </div>
-            <div class="table-container">
-                <table id="ganttTable">
-                    <thead id="ganttHead"></thead>
-                    <tbody id="ganttBody"></tbody>
-                </table>
-            </div>
+        <!-- CHÚ GIẢI GANTT -->
+        <div class="flex gap-4 text-xs font-bold items-center mb-2 justify-end text-slate-600">
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#10b981] rounded-sm"></span> Complete</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#f59e0b] rounded-sm"></span> In Progress</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 bg-[#f43f5e] rounded-sm"></span> Pending</span>
+            <span class="flex items-center gap-1 border-l-2 border-dashed border-red-500 pl-2 text-red-600">Today Marker</span>
+        </div>
+
+        <!-- UNIFIED TABLE CHO TẤT CẢ CÁC TAB -->
+        <div class="table-container">
+            <table id="mainTable">
+                <thead id="mainHead"></thead>
+                <tbody id="mainBody"></tbody>
+            </table>
         </div>
     </div>
 
@@ -157,7 +136,6 @@
                         <input type="date" id="m_due" class="w-full">
                     </div>
                 </div>
-                <!-- Vùng chọn trạng thái -->
                 <div id="statusControlBox" class="flex gap-4">
                     <div class="w-full">
                         <label class="block text-sm font-bold text-slate-700 mb-1">Trạng thái (Tỷ lệ % tự động hóa)</label>
@@ -219,7 +197,7 @@
                 }
                 return 0;
             });
-            refreshViews();
+            renderView();
         });
 
         window.switchTab = function(tabName) {
@@ -228,34 +206,40 @@
             document.getElementById('tab-' + tabName).classList.add('active');
             
             if(tabName === 'DASHBOARD') {
-                document.getElementById('view-company').classList.add('hidden');
-                document.getElementById('view-dashboard').classList.remove('hidden');
+                document.getElementById('dashboardFilters').classList.remove('hidden');
+                document.getElementById('dashboardFilters').classList.add('flex');
             } else {
-                document.getElementById('view-company').classList.remove('hidden');
-                document.getElementById('view-dashboard').classList.add('hidden');
+                document.getElementById('dashboardFilters').classList.add('hidden');
+                document.getElementById('dashboardFilters').classList.remove('flex');
             }
-            refreshViews();
+            renderView();
         };
 
-        function refreshViews() {
-            if(window.currentTab === 'DASHBOARD') renderDashboard();
-            else renderCompanyTable();
-        }
-
         // TÍNH TOÁN DATA
-        function getProcessedTasks(filterComp = null, showDone = false) {
+        function getProcessedTasks() {
+            let showDone = (window.currentTab === 'DONE');
             let processed = JSON.parse(JSON.stringify(window.allTasks)); 
             processed = processed.filter(t => (t.archived === true) === showDone);
-            if(filterComp && filterComp !== 'DONE' && filterComp !== 'DASHBOARD') {
-                processed = processed.filter(t => t.company === filterComp);
+            
+            if(window.currentTab !== 'DONE' && window.currentTab !== 'DASHBOARD') {
+                processed = processed.filter(t => t.company === window.currentTab);
             }
 
+            // Lọc phụ cho Dashboard
+            if(window.currentTab === 'DASHBOARD') {
+                let fStatus = document.getElementById('filterStatus').value;
+                if(fStatus === 'Complete') processed = processed.filter(t => t.progressSub == 100 || (t.status === 'Complete'));
+                if(fStatus === 'Incomplete') processed = processed.filter(t => t.progressSub < 100 && t.status !== 'Complete');
+            }
+
+            // Ép % cho Sub
             processed.forEach(task => {
                 if(task.taskId && task.taskId.includes('.')) {
                     task.progressSub = STATUS_MAP[task.status] !== undefined ? STATUS_MAP[task.status] : 0;
                 }
             });
 
+            // Tính % cho Main
             processed.forEach(task => {
                 if(!task.taskId.includes('.')) {
                     let subs = processed.filter(t => t.taskId.startsWith(task.taskId + '.'));
@@ -277,7 +261,7 @@
             return processed;
         }
 
-        // HÀM HELPER XUẤT TÊN CLASS THEO STATUS
+        // HÀM HELPER 
         function getStatusClass(status) {
             if(status === 'Complete') return 'text-status-complete';
             if(status === 'In Progress') return 'text-status-inprogress';
@@ -291,77 +275,33 @@
             return 'gantt-notstart';
         }
 
-        // VẼ BẢNG CÔNG TY
-        function renderCompanyTable() {
+        // VẼ TOÀN BỘ UI (GỘP CHUNG LIST VÀ GANTT)
+        window.renderView = function() {
+            let isDashboard = (window.currentTab === 'DASHBOARD');
             let isDoneTab = (window.currentTab === 'DONE');
-            let tasks = getProcessedTasks(window.currentTab, isDoneTab);
-            let tbody = document.getElementById('compBody');
-            tbody.innerHTML = '';
+            let tasks = getProcessedTasks();
             
-            if(tasks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-slate-500 italic">Chưa có công việc nào trong danh sách này.</td></tr>`;
-                return;
+            const thead = document.getElementById('mainHead');
+            const tbody = document.getElementById('mainBody');
+            thead.innerHTML = ''; tbody.innerHTML = '';
+            
+            if(tasks.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="100%" class="text-center p-6 text-slate-500 italic">Không có dữ liệu trong danh sách này.</td></tr>`; 
+                return; 
             }
 
-            tasks.forEach(task => {
-                let isMain = !task.taskId.includes('.');
-                let sDate = task.startDate ? new Date(task.startDate) : null;
-                let dDate = task.dueDate ? new Date(task.dueDate) : null;
-                let days = (sDate && dDate) ? Math.round((dDate - sDate) / 86400000) + 1 : '';
-                let sShow = sDate ? ("0"+sDate.getDate()).slice(-2)+"/"+("0"+(sDate.getMonth()+1)).slice(-2)+"/"+sDate.getFullYear() : '';
-                let dShow = dDate ? ("0"+dDate.getDate()).slice(-2)+"/"+("0"+(dDate.getMonth()+1)).slice(-2)+"/"+dDate.getFullYear() : '';
-                
-                let stClass = getStatusClass(task.status);
-                let indent = isMain ? 'font-bold text-[14px] text-slate-800' : 'pl-8 text-slate-600';
-                
-                let actionBtns = `<button onclick="editTask('${task.dbKey}')" class="text-blue-600 hover:text-blue-800 font-semibold mr-3">Sửa</button>
-                                  <button onclick="deleteTask('${task.dbKey}', '${task.taskId}')" class="text-red-500 hover:text-red-700 font-semibold mr-3">Xóa</button>`;
-                
-                if(isMain && !isDoneTab) {
-                    actionBtns += `<button onclick="openModal('${task.taskId}')" class="text-emerald-600 hover:text-emerald-800 font-semibold mr-3">+ Thêm Sub</button>`;
-                    actionBtns += `<button onclick="archiveTask('${task.taskId}', '${task.company}')" class="text-blue-500 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded font-bold text-xs">Lưu 📥</button>`;
-                }
-                if(isMain && isDoneTab) {
-                     actionBtns += `<span class="text-emerald-700 font-bold text-xs">Đã Lưu</span>`;
-                }
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-200">
-                        <td class="text-center font-bold text-slate-600">${task.taskId}</td>
-                        <td class="task-name-col ${indent}">${isMain ? (isDoneTab ? `[${task.company}] ` : '') : '↳ '}${task.name}</td>
-                        <td class="text-center">${sShow}</td>
-                        <td class="text-center">${dShow}</td>
-                        <td class="text-center">${days}</td>
-                        <td class="text-center ${stClass}">${task.status}</td>
-                        <td class="text-center font-bold ${stClass}">${task.progressSub}%</td>
-                        <td class="">${actionBtns}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        // VẼ DASHBOARD & GANTT
-        window.renderDashboard = function() {
-            let fStart = document.getElementById('filterStart').value;
-            let fEnd = document.getElementById('filterEnd').value;
-            let fStatus = document.getElementById('filterStatus').value;
-            
-            let tasks = getProcessedTasks(null, false); 
-            if(fStatus === 'Complete') tasks = tasks.filter(t => t.progressSub == 100);
-            if(fStatus === 'Incomplete') tasks = tasks.filter(t => t.progressSub < 100);
-
-            const thead = document.getElementById('ganttHead');
-            const tbody = document.getElementById('ganttBody');
-            thead.innerHTML = ''; tbody.innerHTML = '';
-            if(tasks.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4">Không có dữ liệu.</td></tr>'; return; }
-
-            // Lấy chuẩn ngày hôm nay (loại bỏ giờ phút)
             let today = new Date();
             today.setHours(0,0,0,0);
 
-            let minDate = fStart ? new Date(fStart) : new Date("2099-12-31");
-            let maxDate = fEnd ? new Date(fEnd) : new Date("1900-01-01");
-            
+            // XÁC ĐỊNH DATE RANGE
+            let minDate = new Date("2099-12-31");
+            let maxDate = new Date("1900-01-01");
+            let fStart = isDashboard ? document.getElementById('filterStart').value : null;
+            let fEnd = isDashboard ? document.getElementById('filterEnd').value : null;
+
+            if(fStart) minDate = new Date(fStart);
+            if(fEnd) maxDate = new Date(fEnd);
+
             if(!fStart || !fEnd) {
                 tasks.forEach(t => {
                     let s = t.startDate ? new Date(t.startDate) : null;
@@ -372,7 +312,7 @@
             }
             if(minDate > maxDate) { minDate = new Date(); maxDate = new Date(); }
             
-            // Đảm bảo Gantt luôn hiển thị tối thiểu ôm trọn ngày hôm nay nếu nằm trong tháng
+            // Ép Today Marker luôn nằm trong vùng render nếu thuộc tháng
             if(today < minDate && !fStart) minDate = new Date(today);
             if(today > maxDate && !fEnd) maxDate = new Date(today);
 
@@ -380,7 +320,20 @@
             let curr = new Date(minDate);
             while(curr <= maxDate) { dateRange.push(new Date(curr)); curr.setDate(curr.getDate() + 1); }
 
-            let trDay = `<tr><th rowspan="2" class="sticky-col">Comp</th><th rowspan="2">#</th><th rowspan="2" class="task-name-col text-left">Task Name</th><th rowspan="2">Status</th><th rowspan="2">Prog %</th>`;
+            // VẼ HEADER
+            let showCompCol = (isDashboard || isDoneTab);
+            let trDay = `<tr>`;
+            if(showCompCol) trDay += `<th rowspan="2" class="sticky-col">Comp</th>`;
+            
+            trDay += `<th rowspan="2">#</th>
+                      <th rowspan="2" class="task-name-col">Task Name</th>
+                      <th rowspan="2" class="w-24">Start Date</th>
+                      <th rowspan="2" class="w-24">Due Date</th>
+                      <th rowspan="2" class="w-12">Days</th>
+                      <th rowspan="2" class="w-24">Status</th>
+                      <th rowspan="2" class="w-16">Prog %</th>
+                      <th rowspan="2" class="w-40">Hành động</th>`;
+                      
             let trDate = `<tr>`;
             dateRange.forEach(d => {
                 let isW = (d.getDay()===0 || d.getDay()===6) ? "bg-weekend-head" : "";
@@ -390,23 +343,59 @@
             });
             thead.innerHTML = trDay + "</tr>" + trDate + "</tr>";
 
+            // VẼ BODY
+            let lastMainId = null;
+            
             tasks.forEach(task => {
+                let currentMainId = task.taskId.split('.')[0];
+                let isMain = !task.taskId.includes('.');
+                
+                // CHÈN KHOẢNG TRẮNG GIỮA CÁC MAIN TASK
+                let spacerClass = "";
+                if(isMain && lastMainId !== null && currentMainId !== lastMainId) {
+                    spacerClass = "spacer-row";
+                }
+                if(isMain) lastMainId = currentMainId;
+
                 let sDate = task.startDate ? new Date(task.startDate) : null;
                 if(sDate) sDate.setHours(0,0,0,0);
                 let dDate = task.dueDate ? new Date(task.dueDate) : null;
                 if(dDate) dDate.setHours(0,0,0,0);
                 
+                let daysCount = (sDate && dDate) ? Math.round((dDate - sDate) / 86400000) + 1 : '';
+                let sShow = sDate ? ("0"+sDate.getDate()).slice(-2)+"/"+("0"+(sDate.getMonth()+1)).slice(-2)+"/"+sDate.getFullYear() : '';
+                let dShow = dDate ? ("0"+dDate.getDate()).slice(-2)+"/"+("0"+(dDate.getMonth()+1)).slice(-2)+"/"+dDate.getFullYear() : '';
+
                 let stTextClass = getStatusClass(task.status);
                 let stGanttClass = getGanttClass(task.status);
-                let isMain = !task.taskId.includes('.');
+                let indent = isMain ? 'font-bold text-[14px] text-slate-800' : 'pl-8 text-slate-600';
                 
-                let rowHtml = `<tr>
-                    <td class="sticky-col bg-white text-center font-bold text-slate-800">${task.company}</td>
-                    <td class="text-center font-bold text-slate-600">${task.taskId}</td>
-                    <td class="task-name-col ${isMain ? 'font-bold' : 'pl-6 text-slate-600'}">${isMain ? '' : '↳ '}${task.name}</td>
-                    <td class="text-center ${stTextClass}">${task.status}</td>
-                    <td class="text-center font-bold ${stTextClass}">${task.progressSub}%</td>`;
+                // Khung Hành Động
+                let actionBtns = `<button onclick="editTask('${task.dbKey}')" class="text-blue-600 hover:text-blue-800 font-semibold mr-2">Sửa</button>
+                                  <button onclick="deleteTask('${task.dbKey}', '${task.taskId}')" class="text-red-500 hover:text-red-700 font-semibold mr-2">Xóa</button>`;
+                
+                if(isMain && !isDoneTab) {
+                    actionBtns += `<button onclick="openModal('${task.taskId}')" class="text-emerald-600 hover:text-emerald-800 font-semibold mr-2">+Sub</button>`;
+                    actionBtns += `<button onclick="archiveTask('${task.taskId}', '${task.company}')" class="text-blue-500 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded font-bold text-xs" title="Lưu trữ công việc này">Lưu 📥</button>`;
+                }
+                if(isMain && isDoneTab) {
+                     actionBtns += `<span class="text-emerald-700 font-bold text-xs">Đã Lưu</span>`;
+                }
 
+                let rowHtml = `<tr class="hover:bg-slate-50 border-b border-slate-200 ${spacerClass}">`;
+                if(showCompCol) rowHtml += `<td class="sticky-col bg-white text-center font-bold text-slate-800">${task.company}</td>`;
+                
+                rowHtml += `
+                    <td class="text-center font-bold text-slate-600">${task.taskId}</td>
+                    <td class="task-name-col ${indent}">${isMain ? '' : '↳ '}${task.name}</td>
+                    <td class="text-center">${sShow}</td>
+                    <td class="text-center">${dShow}</td>
+                    <td class="text-center">${daysCount}</td>
+                    <td class="text-center ${stTextClass}">${task.status}</td>
+                    <td class="text-center font-bold ${stTextClass}">${task.progressSub}%</td>
+                    <td class="text-center whitespace-nowrap">${actionBtns}</td>`;
+
+                // VẼ Ô GANTT
                 dateRange.forEach(d => {
                     let dTime = d.getTime();
                     let isTaskDay = (sDate && dDate && dTime >= sDate.getTime() && dTime <= dDate.getTime());
@@ -415,21 +404,19 @@
                     let cellClass = isTaskDay ? stGanttClass : ((d.getDay()===0 || d.getDay()===6) ? "bg-weekend-body" : "");
                     rowHtml += `<td class="${cellClass} ${isT}"></td>`;
                 });
+                
                 tbody.innerHTML += rowHtml + `</tr>`;
             });
         }
 
-        // TẠO NHANH MAIN TASK TRÊN CÙNG
+        // TẠO NHANH MAIN TASK
         window.quickAddMainTask = function() {
             let comp = document.getElementById('q_company').value;
             let name = document.getElementById('q_name').value.trim();
             let start = document.getElementById('q_start').value;
             let due = document.getElementById('q_due').value;
 
-            if(!name || !start || !due) {
-                alert("Vui lòng nhập Tên công việc, Ngày bắt đầu và Ngày kết thúc!");
-                return;
-            }
+            if(!name || !start || !due) { alert("Vui lòng nhập Tên, Ngày bắt đầu và kết thúc!"); return; }
 
             let newId = getNextTaskId(comp, null);
             push(tasksRef, { company: comp, taskId: newId, name: name, startDate: start, dueDate: due, status: "Not Start", archived: false });
@@ -440,7 +427,7 @@
 
         // LƯU TRỮ (ARCHIVE)
         window.archiveTask = function(taskId, comp) {
-            if(confirm("Bạn muốn LƯU công việc này? (Nó và các Sub-task sẽ được chuyển qua tab LƯU TRỮ)")) {
+            if(confirm("Lưu công việc này? (Nó và các Sub-task sẽ được chuyển qua tab LƯU TRỮ)")) {
                 let toArchive = window.allTasks.filter(t => t.company === comp && (t.taskId === taskId || t.taskId.startsWith(taskId + '.')));
                 toArchive.forEach(t => { update(ref(db, 'tasks/' + t.dbKey), { archived: true }); });
             }
@@ -462,7 +449,7 @@
             }
         }
 
-        // MODAL
+        // MODAL HANDLERS
         window.openModal = function(parentId = null) {
             window.modalState = { mode: 'ADD', parentId: parentId, dbKey: null, isMain: !parentId };
             document.getElementById('modalTitle').innerText = `Thêm Sub-task cho Công việc ${parentId}`;
@@ -510,7 +497,7 @@
 
         window.deleteTask = function(dbKey, taskId) {
             let isMain = !taskId.includes('.');
-            let msg = isMain ? `CẢNH BÁO: Xóa Main Task ${taskId} sẽ KHÔNG xóa Sub-task tự động. Đề nghị xóa Sub-task trước. Xóa ngay?` : `Xác nhận xóa Sub-task ${taskId}?`;
+            let msg = isMain ? `CẢNH BÁO: Xóa Main Task ${taskId} sẽ KHÔNG xóa Sub-task. Bạn phải xóa Sub-task trước. Xóa ngay?` : `Xác nhận xóa Sub-task ${taskId}?`;
             if (confirm(msg)) { remove(ref(db, 'tasks/' + dbKey)); }
         };
     </script>
