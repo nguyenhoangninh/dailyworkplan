@@ -7,32 +7,63 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Phông chữ chuẩn Apple */
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; background-color: #f4f5f8; color: #1d1d1f; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; background-color: #f4f5f8; color: #1d1d1f; }
         
-        /* Bảng thiết kế hiện đại, ẩn viền dọc */
+        /* Bảng thiết kế hiện đại - Responsive */
         table { border-collapse: separate; border-spacing: 0; width: 100%; white-space: nowrap; }
-        th, td { border-bottom: 1px solid #f0f0f0; padding: 12px 14px; text-align: left; vertical-align: middle; }
+        th, td { border-bottom: 1px solid #f0f0f0; padding: 10px 10px; text-align: left; vertical-align: middle; }
         
-        /* Header bảng trong suốt có làm mờ (Backdrop Blur) */
-        th { background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 250, 252, 0.9) 100%); backdrop-filter: blur(10px); color: #6b6b70; text-align: center; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #e5e5ea; position: sticky; top: 0; z-index: 20; }
+        /* Header bảng trong suốt có làm mờ (Backdrop Blur) - Prettier */
+        th { 
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 248, 250, 0.95) 100%); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            color: #5a5a5f; 
+            text-align: center; 
+            font-weight: 800; 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.06em; 
+            border-bottom: 2px solid #e5e5ea; 
+            position: sticky; 
+            top: 0; 
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
         .text-center { text-align: center; }
         
-        /* Thu gọn cột Task Name */
-        .task-name-col { min-width: 250px; max-width: 320px; white-space: normal; word-wrap: break-word; line-height: 1.5; }
+        /* Thu gọn cột Task Name - Responsive */
+        .task-name-col { min-width: 180px; max-width: 240px; white-space: normal; word-wrap: break-word; line-height: 1.4; font-size: 12px; }
         
-        /* Màu sắc Gantt tươi trẻ (Flat UI) */
-        .gantt-cell { border-right: 1px solid #f9f9f9; border-left: 1px solid #f9f9f9; }
+        /* Màu sắc Gantt tươi trẻ - Compact */
+        .gantt-cell { 
+            border-right: 1px solid #f9f9f9; 
+            border-left: 1px solid #f9f9f9;
+            padding: 8px 6px !important;
+            min-width: 32px;
+            height: 40px;
+        }
         .gantt-complete { background-color: #34c759 !important; } /* iOS Green */
         .gantt-inprogress { background-color: #ff9f0a !important; } /* iOS Orange */
         .gantt-pending { background-color: #ff3b30 !important; } /* iOS Red */
         .gantt-notstart { background-color: #e5e5ea !important; } /* Gray */
         
-        /* Mốc Today (Enhanced with Star indicator) */
+        /* Mốc Today (Star indicator in cell) */
         .today-col { 
             background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(255, 59, 48, 0.08) 100%) !important; 
             border-left: 2px solid #ff3b30 !important; 
             border-right: 2px solid #ff3b30 !important;
             box-shadow: inset 0 0 0 1px rgba(255, 59, 48, 0.2) !important;
+            position: relative;
+        }
+        .today-col::before {
+            content: "⭐";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            z-index: 5;
         }
         .today-head { 
             color: white !important; 
@@ -43,27 +74,24 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         .today-head::after {
-            content: " ⭐";
-            margin-left: 4px;
-            font-size: 13px;
-            animation: twinkle 2s ease-in-out infinite;
+            content: "";
         }
         @keyframes twinkle {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
         
-        /* Weekend styling - More prominent */
+        /* Weekend styling - Bright & Vibrant */
         .bg-weekend-head { 
-            background: linear-gradient(135deg, #f5f5f7 0%, #efefef 100%) !important; 
-            color: #7c7c7f !important;
-            font-weight: 700 !important;
-            border-bottom: 2px solid #d2d2d7 !important;
+            background: linear-gradient(135deg, #fff4e6 0%, #ffe5cc 100%) !important; 
+            color: #d97706 !important;
+            font-weight: 800 !important;
+            border-bottom: 3px solid #f59e0b !important;
         } 
         .bg-weekend-body { 
-            background: linear-gradient(180deg, #fafafa 0%, #f5f5f7 100%) !important;
-            border-left: 1px solid #e8e8ea !important;
-            border-right: 1px solid #e8e8ea !important;
+            background: linear-gradient(180deg, #fffbf0 0%, #fff9eb 100%) !important;
+            border-left: 1px solid #fcd34d !important;
+            border-right: 1px solid #fcd34d !important;
         } 
         
         /* Khung chứa bảng bo góc */
@@ -75,25 +103,32 @@
             border-radius: 18px; 
             background: white;
         }
-        .sticky-col { position: sticky; left: 0; background-color: rgba(255, 255, 255, 0.95); z-index: 10; border-right: 1px solid #e5e5ea;}
-        th.sticky-col { z-index: 21; }
+        .sticky-col { 
+            position: sticky; 
+            left: 0; 
+            background-color: rgba(255, 255, 255, 0.98); 
+            z-index: 10; 
+            border-right: 2px solid #e5e5ea;
+            backdrop-filter: blur(8px);
+        }
+        th.sticky-col { z-index: 21; background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 248, 250, 0.95) 100%); }
         
-        /* Input & Select phong cách iOS */
-        input, select { border: 1px solid #d2d2d7; padding: 8px 12px; border-radius: 10px; font-size: 13px; outline: none; background-color: #fafafa; transition: border-color 0.2s; }
+        /* Input & Select phong cách iOS - Responsive */
+        input, select { border: 1px solid #d2d2d7; padding: 8px 10px; border-radius: 8px; font-size: 12px; outline: none; background-color: #fafafa; transition: border-color 0.2s; }
         input:focus, select:focus { border-color: #007aff; background-color: white; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1); }
         
-        /* Tab Segmented Control (Apple UI) */
-        .tabs-container { display: inline-flex; background: #e5e5ea; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
-        .tab-btn { padding: 8px 24px; font-weight: 600; cursor: pointer; color: #86868b; transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); border-radius: 8px; font-size: 13px;}
-        .tab-btn.active { background: white; color: #1d1d1f; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        /* Tab Segmented Control (Apple UI) - Compact */
+        .tabs-container { display: inline-flex; background: #e5e5ea; padding: 3px; border-radius: 10px; margin-bottom: 16px; gap: 2px; flex-wrap: wrap; }
+        .tab-btn { padding: 6px 16px; font-weight: 600; cursor: pointer; color: #86868b; transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); border-radius: 6px; font-size: 11px;}
+        .tab-btn.active { background: white; color: #1d1d1f; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
         .tab-btn:hover:not(.active) { color: #1d1d1f; }
         
-        /* Nút bấm (Buttons) */
-        .btn-primary { background: #007aff; color: white; border-radius: 10px; font-weight: 600; padding: 8px 16px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0, 122, 255, 0.3); }
+        /* Nút bấm (Buttons) - Compact */
+        .btn-primary { background: #007aff; color: white; border-radius: 8px; font-weight: 600; padding: 6px 14px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0, 122, 255, 0.3); font-size: 12px; }
         .btn-primary:hover { background: #006ce6; transform: scale(0.98); }
         
-        /* Nút Hành động nhỏ trong bảng */
-        .action-btn { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; transition: background 0.2s; cursor: pointer; }
+        /* Nút Hành động nhỏ trong bảng - Compact */
+        .action-btn { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; transition: background 0.2s; cursor: pointer; white-space: nowrap; }
         .btn-edit { color: #007aff; background: rgba(0, 122, 255, 0.1); } .btn-edit:hover { background: rgba(0, 122, 255, 0.2); }
         .btn-delete { color: #ff3b30; background: rgba(255, 59, 48, 0.1); } .btn-delete:hover { background: rgba(255, 59, 48, 0.2); }
         .btn-addsub { color: #34c759; background: rgba(52, 199, 89, 0.1); } .btn-addsub:hover { background: rgba(52, 199, 89, 0.2); }
@@ -105,6 +140,64 @@
         /* Row hover effect */
         tbody tr { transition: background-color 0.2s ease; }
         tbody tr:hover { background-color: rgba(0, 122, 255, 0.04) !important; }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            body { font-size: 11px; }
+            th, td { padding: 8px 8px; }
+            th { font-size: 9px; letter-spacing: 0.04em; }
+            .task-name-col { min-width: 150px; max-width: 200px; font-size: 11px; }
+            .gantt-cell { padding: 6px 4px !important; min-width: 28px; height: 36px; }
+            .w-36 { width: 120px !important; }
+            .w-24 { width: 80px !important; }
+            .w-40 { width: 120px !important; }
+        }
+        
+        @media (max-width: 768px) {
+            body { font-size: 10px; }
+            th, td { padding: 6px 6px; }
+            th { font-size: 8px; letter-spacing: 0.02em; }
+            .task-name-col { min-width: 120px; max-width: 160px; font-size: 10px; }
+            .gantt-cell { padding: 5px 3px !important; min-width: 24px; height: 32px; }
+            .action-btn { padding: 2px 6px; font-size: 9px; }
+            .w-36 { width: 100px !important; }
+            .w-24 { width: 60px !important; }
+            .w-40 { width: 100px !important; }
+        }
+        
+        @media (max-width: 480px) {
+            body { font-size: 9px; }
+            th, td { padding: 4px 4px; }
+            th { font-size: 7px; letter-spacing: 0.01em; }
+            .task-name-col { min-width: 100px; max-width: 140px; font-size: 9px; }
+            .gantt-cell { padding: 4px 2px !important; min-width: 20px; height: 28px; }
+            input, select { padding: 5px 8px; font-size: 10px; }
+            .tabs-container { padding: 2px; margin-bottom: 12px; }
+            .tab-btn { padding: 4px 10px; font-size: 9px; }
+            .btn-primary { padding: 5px 10px; font-size: 10px; }
+            .w-36 { width: 80px !important; }
+            .w-24 { width: 50px !important; }
+            .w-40 { width: 80px !important; }
+            .w-full { width: 100% !important; }
+        }
+        
+        /* Form Container Compact */
+        .max-w-\[98\%\] { max-width: 98% !important; padding: 16px !important; }
+        
+        /* Legend Compact */
+        .flex.gap-4.text-xs { gap: 12px !important; font-size: 11px !important; }
+        
+        @media (max-width: 768px) {
+            .max-w-\[98\%\] { padding: 12px !important; }
+            .flex.gap-4.text-xs { gap: 8px !important; font-size: 9px !important; }
+            .flex.flex-wrap.gap-4 { gap: 8px !important; }
+        }
+        
+        @media (max-width: 480px) {
+            .max-w-\[98\%\] { padding: 8px !important; }
+            .flex.gap-4.text-xs { gap: 6px !important; font-size: 8px !important; flex-wrap: wrap; }
+            .flex.flex-wrap.gap-4 { gap: 6px !important; padding: 8px !important; }
+        }
     </style>
 </head>
 <body class="p-6">
