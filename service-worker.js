@@ -1,0 +1,160 @@
+const CACHE_NAME = 'master-work-plan-v1';
+const RUNTIME_CACHE = 'master-work-plan-runtime';
+const ASSETS_TO_CACHE = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  'https://cdn.tailwindcss.com',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
+];
+
+// Install event - cache essential assets
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('Service Worker: Caching assets');
+      // Cache critical assets, but don't fail if some are unavailable
+      return Promise.all(
+        ASSETS_TO_CACHE.map(url => {
+          return cache.add(url).catch(err => {
+            console.log('Could not cache:', url);
+          });
+        })
+      );
+    }).then(() => self.skipWaiting())
+  );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
+            console.log('Service Worker: Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// Fetch event - serve from cache, fallback to network
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip Firebase and external API calls for now
+  if (url.hostname.includes('firebase') || url.hostname.includes('gstatic')) {
+    return event.respondWith(
+      fetch(request)
+        .then(response => {
+          // Cache successful responses
+          if (response.status === 200) {
+            const cache = caches.open(RUNTIME_CACHE);
+            cache.then(c => c.put(request, response.clone()));
+          }
+          return response;
+        })
+        .catch(() => {
+          // Try cache if offline
+          return caches.match(request);
+        })
+    );
+  }
+
+  // For HTML requests
+  if (request.method === 'GET' && request.headers.get('accept').includes('text/html')) {
+    return event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response.status === 200) {
+            const cache = caches.open(CACHE_NAME);
+            cache.then(c => c.put(request, response.clone()));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request) || caches.match('/'))
+    );
+  }
+
+  // For CSS, JS, images - cache first, network second
+  if (request.method === 'GET') {
+    return event.respondWith(
+      caches.match(request)
+        .then(response => response || fetch(request))
+        .catch(() => {
+          // Return offline page or cached content
+          if (request.destination === 'image') {
+            return new Response('', { status: 404 });
+          }
+        })
+    );
+  }
+
+  // For other requests, go straight to network
+  event.respondWith(fetch(request));
+});
+
+// Background sync for offline actions
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-tasks') {
+    event.waitUntil(
+      // Sync pending tasks when back online
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'SYNC_TASKS',
+            message: 'Ready to sync offline changes'
+          });
+        });
+      })
+    );
+  }
+});
+
+// Handle messages from clients
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Push notifications (for future use)
+self.addEventListener('push', event => {
+  if (event.data) {
+    const options = {
+      body: event.data.text(),
+      icon: '/icon-192.svg',
+      badge: '/badge-72.svg',
+      tag: 'work-plan-notification',
+      requireInteraction: false
+    };
+    event.waitUntil(
+      self.registration.showNotification('Master Work Plan', options)
+    );
+  }
+});
+
+// Handle notification clicks
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      // Focus existing window if available
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url === '/' && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Open new window if not available
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
+  );
+});
