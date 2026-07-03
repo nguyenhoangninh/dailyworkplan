@@ -2,7 +2,37 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    
+    <!-- App Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#3b82f6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)">
+    
+    <!-- iOS App Configuration -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Work Plan">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%233b82f6' width='180' height='180' rx='40'/><text x='50%' y='50%' font-size='70' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central' font-family='sans-serif'>WP</text></svg>">
+    
+    <!-- Android App Configuration -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Master Work Plan">
+    
+    <!-- General Meta Tags -->
+    <meta name="description" content="Professional Gantt chart & work planning app with real-time sync. Plan, track, and manage projects efficiently on any device.">
+    <meta name="keywords" content="gantt chart, work planning, project management, productivity">
+    <meta name="author" content="Master Work Plan">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Disable unwanted zoom and tap highlights on mobile -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <!-- Splash Screen for iOS -->
+    <link rel="apple-touch-startup-image" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23f9fafb' width='540' height='720'/><rect fill='%233b82f6' width='540' height='60'/><text x='270' y='300' font-size='32' font-weight='bold' fill='%231e293b' text-anchor='middle' dominant-baseline='central' font-family='sans-serif'>Master Work Plan</text></svg>">
+    
     <title>Master Work Plan - Realtime</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -1043,18 +1073,81 @@
             trigger.classList.toggle('active');
         };
         
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.action-menu-wrapper')) {
-                window.closeAllMenus();
-            }
+        // ========================================
+        // PWA SERVICE WORKER REGISTRATION
+        // ========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered:', registration);
+                        
+                        // Check for updates periodically
+                        setInterval(() => {
+                            registration.update();
+                        }, 60000); // Check every minute
+                        
+                        // Listen for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version available
+                                    console.log('New version available!');
+                                    // Optionally show update notification
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => console.log('Service Worker registration failed:', error));
+            });
+            
+            // Handle updates from service worker
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('Service Worker controller changed - app updated!');
+            });
+        }
+        
+        // ========================================
+        // PWA INSTALL PROMPT
+        // ========================================
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing
+            e.preventDefault();
+            // Stash the event for later use
+            deferredPrompt = e;
+            console.log('Install prompt ready');
         });
         
-        window.deleteTask = function(dbKey, taskId) {
-            let isMain = !taskId.includes('.');
-            let msg = isMain ? `CẢNH BÁO: Xóa Main Task ${taskId} sẽ KHÔNG xóa Sub-task. Bạn phải xóa Sub-task trước. Xóa ngay?` : `Xác nhận xóa Sub-task ${taskId}?`;
-            if (confirm(msg)) { remove(ref(db, 'tasks/' + dbKey)); }
-            window.closeAllMenus();
+        // Optional: Add install button functionality
+        window.installApp = function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('App installed!');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        };
+        
+        // Detect if running as standalone app
+        if (window.navigator.standalone === true) {
+            console.log('Running as standalone PWA');
+            document.documentElement.classList.add('standalone');
+        }
+        
+        // Handle app visibility changes (when switching apps)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('App backgrounded');
+            } else {
+                console.log('App foregrounded - syncing data');
+                // Trigger any pending syncs
+            }
+        });
         };
     </script>
 </body>
