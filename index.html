@@ -8,7 +8,7 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; }
         table { border-collapse: collapse; width: 100%; white-space: nowrap; }
-        th, td { border: 1px solid #b4c6e7; padding: 6px 10px; text-align: left; }
+        th, td { border: 1px solid #b4c6e7; padding: 8px 10px; text-align: left; }
         th { background-color: #1f4e78; color: white; text-align: center; font-weight: bold; }
         .text-center { text-align: center; }
         .bg-weekend-head { background-color: #0070c0 !important; } 
@@ -16,44 +16,70 @@
         
         .status-complete { background-color: #c6efce; color: #006100; font-weight: 500; }
         .status-inprogress { background-color: #ffff99; color: #9c6500; font-weight: 500; }
-        .status-notstart { background-color: #f2f2f2; color: #555; font-weight: 500; }
         .status-pending { background-color: #ffc7ce; color: #9c0006; font-weight: 500; }
+        .status-notstart { background-color: #f2f2f2; color: #555; font-weight: 500; }
         
-        .table-container { overflow-x: auto; max-width: 100%; border: 1px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px;}
+        .table-container { overflow-x: auto; max-width: 100%; border: 1px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .sticky-col { position: sticky; left: 0; background-color: white; z-index: 10; border-right: 2px solid #8ea9db;}
         th.sticky-col { background-color: #1f4e78; z-index: 11; }
         
-        input, select { border: 1px solid #ccc; padding: 6px; border-radius: 4px; font-size: 13px;}
-        .tab-btn { padding: 10px 20px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; color: #555; transition: all 0.3s;}
-        .tab-btn.active { border-bottom: 3px solid #1f4e78; color: #1f4e78; background-color: #eef2f5;}
+        input, select { border: 1px solid #ccc; padding: 7px; border-radius: 4px; font-size: 13px; outline: none; }
+        input:focus, select:focus { border-color: #1f4e78; }
+        
+        .tab-btn { padding: 10px 24px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; color: #555; transition: all 0.3s; }
+        .tab-btn.active { border-bottom: 3px solid #1f4e78; color: #1f4e78; background-color: #eef2f5; }
         .tab-btn:hover { background-color: #f8f9fa; }
     </style>
 </head>
 <body class="bg-gray-100 p-4 min-h-screen">
 
-    <div class="max-w-[98%] mx-auto bg-white p-4 rounded shadow-lg border-t-4 border-blue-800">
-        <h1 class="text-2xl font-bold text-blue-900 mb-4 uppercase tracking-wider">MASTER WORK PLAN - REALTIME DATABASE</h1>
+    <div class="max-w-[98%] mx-auto bg-white p-5 rounded shadow-lg border-t-4 border-blue-800">
+        <h1 class="text-2xl font-bold text-blue-900 mb-6 uppercase tracking-wider">MASTER WORK PLAN - REALTIME DATABASE</h1>
         
-        <!-- TABS NAV -->
-        <div class="flex space-x-1 border-b border-gray-300 mb-4">
-            <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">🏢 CÔNG TY SVL</div>
-            <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">🏢 CÔNG TY SGV</div>
-            <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">🏢 CÔNG TY SVN</div>
-            <div id="tab-DASHBOARD" class="tab-btn text-red-700" onclick="switchTab('DASHBOARD')">📊 BÁO CÁO & GANTT</div>
+        <!-- FORM TẠO NHANH CÔNG VIỆC CHÍNH Ở TRÊN CÙNG -->
+        <div class="flex flex-wrap gap-4 items-end bg-blue-50 p-4 rounded border border-blue-200 mb-6 shadow-sm">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Công ty</label>
+                <select id="q_company" class="w-24 font-bold text-blue-800">
+                    <option value="SVL">SVL</option>
+                    <option value="SGV">SGV</option>
+                    <option value="SVN">SVN</option>
+                </select>
+            </div>
+            <div class="flex-1 min-w-[250px]">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Tên Công Việc Chính</label>
+                <input type="text" id="q_name" placeholder="Nhập tên công việc..." class="w-full">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Từ ngày</label>
+                <input type="date" id="q_start" class="w-36">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Đến ngày</label>
+                <input type="date" id="q_due" class="w-36">
+            </div>
+            <button onclick="quickAddMainTask()" class="bg-blue-600 text-white font-bold px-6 py-[9px] rounded shadow hover:bg-blue-700 transition-colors">
+                + TẠO CÔNG VIỆC
+            </button>
         </div>
 
-        <!-- VIEWS: COMPANY -->
+        <!-- TABS NAV -->
+        <div class="flex space-x-1 border-b border-gray-300 mb-5">
+            <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">SVL</div>
+            <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">SGV</div>
+            <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">SVN</div>
+            <div id="tab-DASHBOARD" class="tab-btn text-purple-700" onclick="switchTab('DASHBOARD')">BÁO CÁO & GANTT</div>
+            <div id="tab-DONE" class="tab-btn text-green-700 ml-auto" onclick="switchTab('DONE')">LƯU TRỮ (DONE)</div>
+        </div>
+
+        <!-- VIEWS: COMPANY & ARCHIVE -->
         <div id="view-company" class="block">
-            <div class="flex justify-between items-center bg-blue-50 p-4 rounded border border-blue-200 mb-4">
-                <h2 id="companyTitle" class="text-lg font-bold text-blue-800">Danh sách công việc SVL</h2>
-                <button onclick="openModal(null)" class="bg-blue-600 text-white font-bold px-6 py-2 rounded shadow hover:bg-blue-700 transition-colors">+ THÊM CÔNG VIỆC CHÍNH</button>
-            </div>
             <div class="table-container">
                 <table id="compTable">
                     <thead>
                         <tr>
-                            <th class="w-16">Task #</th>
-                            <th style="min-width: 300px;">Task Name</th>
+                            <th class="w-12">Task #</th>
+                            <th class="w-auto text-left">Task Name</th>
                             <th class="w-24">Start Date</th>
                             <th class="w-24">Due Date</th>
                             <th class="w-16">Days</th>
@@ -69,17 +95,17 @@
 
         <!-- VIEWS: DASHBOARD -->
         <div id="view-dashboard" class="hidden">
-            <div class="flex gap-4 flex-wrap items-end bg-red-50 p-4 rounded border border-red-200 mb-4">
-                <div><label class="block text-xs font-bold text-gray-600">Từ ngày</label><input type="date" id="filterStart"></div>
-                <div><label class="block text-xs font-bold text-gray-600">Đến ngày</label><input type="date" id="filterEnd"></div>
-                <div><label class="block text-xs font-bold text-gray-600">Trạng thái</label>
-                    <select id="filterStatus">
+            <div class="flex gap-4 flex-wrap items-end bg-purple-50 p-4 rounded border border-purple-200 mb-4">
+                <div><label class="block text-xs font-bold text-gray-600 mb-1">Từ ngày</label><input type="date" id="filterStart"></div>
+                <div><label class="block text-xs font-bold text-gray-600 mb-1">Đến ngày</label><input type="date" id="filterEnd"></div>
+                <div><label class="block text-xs font-bold text-gray-600 mb-1">Trạng thái</label>
+                    <select id="filterStatus" class="w-40">
                         <option value="ALL">Tất cả</option>
                         <option value="Complete">Hoàn thành</option>
                         <option value="Incomplete">Chưa hoàn thành</option>
                     </select>
                 </div>
-                <button onclick="renderDashboard()" class="bg-red-600 text-white font-bold px-6 py-2 rounded shadow hover:bg-red-700">LỌC DỮ LIỆU</button>
+                <button onclick="renderDashboard()" class="bg-purple-600 text-white font-bold px-6 py-[9px] rounded shadow hover:bg-purple-700">LỌC DỮ LIỆU</button>
             </div>
             <div class="table-container">
                 <table id="ganttTable">
@@ -93,32 +119,41 @@
     <!-- MODAL THÊM/SỬA TASK -->
     <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
         <div class="bg-white p-6 rounded-lg shadow-xl w-[500px]">
-            <h3 id="modalTitle" class="text-xl font-bold text-blue-800 mb-4 border-b pb-2">Thêm Công Việc</h3>
-            <div class="space-y-3">
-                <div><label class="block text-sm font-bold text-gray-700">Tên công việc <span class="text-red-500">*</span></label>
-                    <input type="text" id="m_name" class="w-full"></div>
-                <div class="flex gap-4">
-                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700">Start Date <span class="text-red-500">*</span></label>
-                        <input type="date" id="m_start" class="w-full"></div>
-                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700">Due Date <span class="text-red-500">*</span></label>
-                        <input type="date" id="m_due" class="w-full"></div>
+            <h3 id="modalTitle" class="text-xl font-bold text-blue-800 mb-4 border-b pb-2">Thông tin Công Việc</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Tên công việc <span class="text-red-500">*</span></label>
+                    <input type="text" id="m_name" class="w-full">
                 </div>
                 <div class="flex gap-4">
-                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700">Trạng thái</label>
-                        <select id="m_status" class="w-full" onchange="autoFillProgress()">
-                            <option value="Not Start">Not Start</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Complete">Complete</option>
-                            <option value="Pending">Pending</option>
+                    <div class="w-1/2">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Start Date <span class="text-red-500">*</span></label>
+                        <input type="date" id="m_start" class="w-full">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Due Date <span class="text-red-500">*</span></label>
+                        <input type="date" id="m_due" class="w-full">
+                    </div>
+                </div>
+                <!-- Vùng chọn trạng thái (Chỉ hiện cho Sub Task) -->
+                <div id="statusControlBox" class="flex gap-4">
+                    <div class="w-full">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Trạng thái (Tỷ lệ % tự động hóa)</label>
+                        <select id="m_status" class="w-full bg-yellow-50 font-semibold border-yellow-300">
+                            <option value="Not Start">Not Start (0%)</option>
+                            <option value="Pending">Pending (25%)</option>
+                            <option value="In Progress">In Progress (50%)</option>
+                            <option value="Complete">Complete (100%)</option>
                         </select>
                     </div>
-                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700">Tiến độ (%)</label>
-                        <input type="number" id="m_prog" class="w-full" min="0" max="100" value="0"></div>
+                </div>
+                <div id="mainTaskWarning" class="hidden text-sm italic text-gray-500 bg-gray-100 p-2 rounded">
+                    * Trạng thái và % của Main Task được tính tự động dựa trên các Sub-task con.
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded font-bold hover:bg-gray-400">HỦY</button>
-                <button onclick="saveTask()" class="px-4 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700">LƯU LẠI</button>
+                <button onclick="closeModal()" class="px-5 py-2 bg-gray-300 text-gray-800 rounded font-bold hover:bg-gray-400">HỦY</button>
+                <button onclick="saveTaskModal()" class="px-5 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700">LƯU LẠI</button>
             </div>
         </div>
     </div>
@@ -128,7 +163,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        // CẤU HÌNH FIREBASE - GIỮ NGUYÊN
+        // CẤU HÌNH FIREBASE CỦA BẠN
         const firebaseConfig = {
             apiKey: "AIzaSyA8XGvUoCBWs8WUlwC2hUEHPF6RQl6eSM0",
             authDomain: "dailyworkplan-de669.firebaseapp.com",
@@ -142,16 +177,24 @@
         const db = getDatabase(app);
         const tasksRef = ref(db, 'tasks');
 
-        // BIẾN TOÀN CỤC
+        // BẢNG QUY ĐỔI STATUS -> PROGRESS %
+        const STATUS_MAP = {
+            "Not Start": 0,
+            "Pending": 25,
+            "In Progress": 50,
+            "Complete": 100
+        };
+
         window.allTasks = [];
         window.currentTab = 'SVL';
-        window.modalState = { mode: '', parentId: null, dbKey: null };
+        window.modalState = { mode: '', parentId: null, dbKey: null, isMain: false };
 
-        // LẮNG NGHE DỮ LIỆU
+        // LẮNG NGHE DỮ LIỆU REALTIME
         onValue(tasksRef, (snapshot) => {
             window.allTasks = [];
             snapshot.forEach((child) => { window.allTasks.push({ dbKey: child.key, ...child.val() }); });
-            // Sort by Task ID automatically
+            
+            // Sắp xếp Task ID (1, 1.1, 1.2, 2...)
             window.allTasks.sort((a, b) => {
                 let aParts = a.taskId.split('.').map(Number);
                 let bParts = b.taskId.split('.').map(Number);
@@ -164,7 +207,6 @@
             refreshViews();
         });
 
-        // ĐỔI TAB
         window.switchTab = function(tabName) {
             window.currentTab = tabName;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -176,7 +218,6 @@
             } else {
                 document.getElementById('view-company').classList.remove('hidden');
                 document.getElementById('view-dashboard').classList.add('hidden');
-                document.getElementById('companyTitle').innerText = `Danh sách công việc ${tabName}`;
             }
             refreshViews();
         };
@@ -186,44 +227,56 @@
             else renderCompanyTable();
         }
 
-        // AUTO FILL % DỰA VÀO STATUS
-        window.autoFillProgress = function() {
-            let st = document.getElementById('m_status').value;
-            let pr = document.getElementById('m_prog');
-            if(st === 'Not Start') pr.value = 0;
-            if(st === 'Complete') pr.value = 100;
-        }
-
-        // TÍNH TOÁN DATA (MAIN TỪ SUB)
-        function getProcessedTasks(filterComp = null) {
-            let processed = JSON.parse(JSON.stringify(window.allTasks)); // clone
-            if(filterComp) processed = processed.filter(t => t.company === filterComp);
+        // HÀM TÍNH TOÁN DATA: STATUS <-> %
+        function getProcessedTasks(filterComp = null, showDone = false) {
+            let processed = JSON.parse(JSON.stringify(window.allTasks)); // Copy data
             
+            // Lọc theo Tab Lưu trữ (Done) hoặc Active
+            processed = processed.filter(t => (t.archived === true) === showDone);
+            if(filterComp && filterComp !== 'DONE' && filterComp !== 'DASHBOARD') {
+                processed = processed.filter(t => t.company === filterComp);
+            }
+
+            // 1. Ép % cho Sub-task dựa vào Status đã chọn
+            processed.forEach(task => {
+                if(task.taskId && task.taskId.includes('.')) {
+                    task.progressSub = STATUS_MAP[task.status] !== undefined ? STATUS_MAP[task.status] : 0;
+                }
+            });
+
+            // 2. Tính trung bình cho Main-task dựa vào Sub-tasks
             processed.forEach(task => {
                 if(!task.taskId.includes('.')) {
                     let subs = processed.filter(t => t.taskId.startsWith(task.taskId + '.'));
                     if(subs.length > 0) {
                         let sum = 0;
-                        subs.forEach(s => sum += parseInt(s.progressSub || 0));
+                        subs.forEach(s => sum += s.progressSub);
                         let avg = Math.round(sum / subs.length);
                         task.progressSub = avg;
+                        
+                        // Đảo ngược từ % ra Status cho Main
                         if(avg === 0) task.status = 'Not Start';
                         else if(avg === 100) task.status = 'Complete';
                         else task.status = 'In Progress';
+                    } else {
+                        // Nếu chưa có Sub, mặc định 0%
+                        task.progressSub = 0;
+                        task.status = 'Not Start';
                     }
                 }
             });
             return processed;
         }
 
-        // VẼ BẢNG CÔNG TY
+        // VẼ BẢNG DANH SÁCH (CHO 3 CÔNG TY VÀ TAB LƯU TRỮ)
         function renderCompanyTable() {
-            let tasks = getProcessedTasks(window.currentTab);
+            let isDoneTab = (window.currentTab === 'DONE');
+            let tasks = getProcessedTasks(window.currentTab, isDoneTab);
             let tbody = document.getElementById('compBody');
             tbody.innerHTML = '';
             
             if(tasks.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4">Chưa có công việc nào.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-gray-500 italic">Chưa có công việc nào trong danh sách này.</td></tr>`;
                 return;
             }
 
@@ -236,27 +289,73 @@
                 let dShow = dDate ? ("0"+dDate.getDate()).slice(-2)+"/"+("0"+(dDate.getMonth()+1)).slice(-2)+"/"+dDate.getFullYear() : '';
                 
                 let stClass = task.status === 'Complete' ? 'status-complete' : task.status === 'Not Start' ? 'status-notstart' : task.status === 'Pending' ? 'status-pending' : 'status-inprogress';
-                let indent = isMain ? 'font-bold' : 'pl-8 text-gray-700';
+                let indent = isMain ? 'font-bold text-[14px]' : 'pl-8 text-gray-700';
                 
-                let actionBtns = `<button onclick="editTask('${task.dbKey}')" class="text-blue-600 hover:underline mr-3 font-semibold">Sửa</button>
-                                  <button onclick="deleteTask('${task.dbKey}', '${task.taskId}')" class="text-red-500 hover:underline mr-3 font-semibold">Xóa</button>`;
-                if(isMain) {
-                    actionBtns += `<button onclick="openModal('${task.taskId}')" class="text-green-600 hover:underline font-semibold">+ Thêm Sub</button>`;
+                // Khung Hành Động
+                let actionBtns = `<button onclick="editTask('${task.dbKey}')" class="text-blue-600 hover:text-blue-800 font-semibold mr-3">Sửa</button>
+                                  <button onclick="deleteTask('${task.dbKey}', '${task.taskId}')" class="text-red-500 hover:text-red-700 font-semibold mr-3">Xóa</button>`;
+                
+                if(isMain && !isDoneTab) {
+                    actionBtns += `<button onclick="openModal('${task.taskId}')" class="text-green-600 hover:text-green-800 font-semibold mr-3">+ Thêm Sub</button>`;
+                    actionBtns += `<button onclick="archiveTask('${task.taskId}', '${task.company}')" class="text-blue-500 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded font-bold text-xs">Lưu 📥</button>`;
+                }
+                if(isMain && isDoneTab) {
+                     actionBtns += `<span class="text-green-700 font-bold text-xs">Đã Lưu</span>`;
                 }
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50 border-b border-gray-200">
-                        <td class="text-center font-semibold">${task.taskId}</td>
-                        <td class="${indent}">${isMain ? '' : '↳ '}${task.name}</td>
+                    <tr class="hover:bg-blue-50 border-b border-gray-200">
+                        <td class="text-center font-bold text-gray-600">${task.taskId}</td>
+                        <td class="${indent}">${isMain ? (isDoneTab ? `[${task.company}] ` : '') : '↳ '}${task.name}</td>
                         <td class="text-center">${sShow}</td>
                         <td class="text-center">${dShow}</td>
                         <td class="text-center">${days}</td>
                         <td class="text-center ${stClass}">${task.status}</td>
-                        <td class="text-center font-bold ${stClass}">${task.progressSub || 0}%</td>
+                        <td class="text-center font-bold ${stClass}">${task.progressSub}%</td>
                         <td class="">${actionBtns}</td>
                     </tr>
                 `;
             });
+        }
+
+        // TẠO NHANH MAIN TASK TRÊN CÙNG
+        window.quickAddMainTask = function() {
+            let comp = document.getElementById('q_company').value;
+            let name = document.getElementById('q_name').value.trim();
+            let start = document.getElementById('q_start').value;
+            let due = document.getElementById('q_due').value;
+
+            if(!name || !start || !due) {
+                alert("Vui lòng nhập Tên công việc, Ngày bắt đầu và Ngày kết thúc!");
+                return;
+            }
+
+            let newId = getNextTaskId(comp, null);
+            push(tasksRef, {
+                company: comp,
+                taskId: newId,
+                name: name,
+                startDate: start,
+                dueDate: due,
+                status: "Not Start",
+                archived: false
+            });
+
+            // Reset form
+            document.getElementById('q_name').value = '';
+            document.getElementById('q_start').value = '';
+            document.getElementById('q_due').value = '';
+            switchTab(comp); // Nhảy về tab công ty vừa tạo
+        }
+
+        // LOGIC LƯU TRỮ (ARCHIVE)
+        window.archiveTask = function(taskId, comp) {
+            if(confirm("Bạn muốn LƯU công việc này? (Nó và các Sub-task sẽ được chuyển qua tab LƯU TRỮ)")) {
+                let toArchive = window.allTasks.filter(t => t.company === comp && (t.taskId === taskId || t.taskId.startsWith(taskId + '.')));
+                toArchive.forEach(t => {
+                    update(ref(db, 'tasks/' + t.dbKey), { archived: true });
+                });
+            }
         }
 
         // VẼ DASHBOARD (GANTT)
@@ -265,9 +364,8 @@
             let fEnd = document.getElementById('filterEnd').value;
             let fStatus = document.getElementById('filterStatus').value;
             
-            let tasks = getProcessedTasks(null); // Lấy tất cả công ty
+            let tasks = getProcessedTasks(null, false); // Chỉ quét Active task
             
-            // Apply Status Filter
             if(fStatus === 'Complete') tasks = tasks.filter(t => t.progressSub == 100);
             if(fStatus === 'Incomplete') tasks = tasks.filter(t => t.progressSub < 100);
 
@@ -293,7 +391,7 @@
             let curr = new Date(minDate);
             while(curr <= maxDate) { dateRange.push(new Date(curr)); curr.setDate(curr.getDate() + 1); }
 
-            let trDay = `<tr><th rowspan="2" class="sticky-col">Company</th><th rowspan="2">Task #</th><th rowspan="2" style="min-width: 250px;">Task Name</th><th rowspan="2">Status</th><th rowspan="2">Prog %</th>`;
+            let trDay = `<tr><th rowspan="2" class="sticky-col">Comp</th><th rowspan="2">#</th><th rowspan="2" style="min-width: 250px;">Task Name</th><th rowspan="2">Status</th><th rowspan="2">Prog %</th>`;
             let trDate = `<tr>`;
             dateRange.forEach(d => {
                 let isW = (d.getDay()===0 || d.getDay()===6) ? "bg-weekend-head" : "";
@@ -313,7 +411,7 @@
                     <td class="text-center">${task.taskId}</td>
                     <td class="${isMain ? 'font-bold' : 'pl-6'}">${isMain ? '' : '↳ '}${task.name}</td>
                     <td class="text-center ${stClass}">${task.status}</td>
-                    <td class="text-center font-bold ${stClass}">${task.progressSub || 0}%</td>`;
+                    <td class="text-center font-bold ${stClass}">${task.progressSub}%</td>`;
 
                 dateRange.forEach(d => {
                     let isTaskDay = (sDate && dDate && d >= sDate && d <= dDate);
@@ -324,15 +422,15 @@
             });
         }
 
-        // LOGIC TẠO TASK # TỰ ĐỘNG
+        // SINH MÃ TASK
         function getNextTaskId(company, parentId = null) {
             let compTasks = window.allTasks.filter(t => t.company === company);
-            if(!parentId) { // Main task
+            if(!parentId) { 
                 let mains = compTasks.filter(t => !t.taskId.includes('.'));
                 if(mains.length === 0) return "1";
                 let max = Math.max(...mains.map(t => parseInt(t.taskId)));
                 return (max + 1).toString();
-            } else { // Sub task
+            } else { 
                 let subs = compTasks.filter(t => t.taskId.startsWith(parentId + '.'));
                 if(subs.length === 0) return parentId + ".1";
                 let max = Math.max(...subs.map(t => parseInt(t.taskId.split('.')[1])));
@@ -340,19 +438,19 @@
             }
         }
 
-        // MODAL HANDLERS
+        // HỆ THỐNG MODAL THEO QUY TẮC MỚI
         window.openModal = function(parentId = null) {
-            window.modalState = { mode: 'ADD', parentId: parentId, dbKey: null };
-            document.getElementById('modalTitle').innerText = parentId ? `Thêm Công Việc Con cho Task ${parentId}` : `Thêm Công Việc Chính`;
+            window.modalState = { mode: 'ADD', parentId: parentId, dbKey: null, isMain: !parentId };
+            document.getElementById('modalTitle').innerText = `Thêm Sub-task cho Công việc ${parentId}`;
+            
             document.getElementById('m_name').value = '';
             document.getElementById('m_start').value = '';
             document.getElementById('m_due').value = '';
             document.getElementById('m_status').value = 'Not Start';
-            document.getElementById('m_prog').value = '0';
             
-            // Disable Progress input for Main Tasks since it's auto-calculated
-            document.getElementById('m_prog').disabled = !parentId ? true : false;
-            if(!parentId) document.getElementById('m_prog').title = "Tỷ lệ Main Task được tính tự động từ Sub Task";
+            // Sub task thì mở Status Box
+            document.getElementById('statusControlBox').classList.remove('hidden');
+            document.getElementById('mainTaskWarning').classList.add('hidden');
 
             document.getElementById('taskModal').classList.remove('hidden');
         };
@@ -360,55 +458,58 @@
         window.editTask = function(dbKey) {
             let task = window.allTasks.find(t => t.dbKey === dbKey);
             if(!task) return;
-            window.modalState = { mode: 'EDIT', parentId: null, dbKey: dbKey };
-            document.getElementById('modalTitle').innerText = `Sửa Công Việc: ${task.taskId}`;
+            let isMain = !task.taskId.includes('.');
+            window.modalState = { mode: 'EDIT', parentId: null, dbKey: dbKey, isMain: isMain };
+            
+            document.getElementById('modalTitle').innerText = `Sửa Thông tin: Task ${task.taskId}`;
             document.getElementById('m_name').value = task.name;
             document.getElementById('m_start').value = task.startDate;
             document.getElementById('m_due').value = task.dueDate;
             document.getElementById('m_status').value = task.status;
-            document.getElementById('m_prog').value = task.progressSub || 0;
             
-            let isMain = !task.taskId.includes('.');
-            document.getElementById('m_prog').disabled = isMain ? true : false;
+            // Khóa Status đối với Main Task
+            if(isMain) {
+                document.getElementById('statusControlBox').classList.add('hidden');
+                document.getElementById('mainTaskWarning').classList.remove('hidden');
+            } else {
+                document.getElementById('statusControlBox').classList.remove('hidden');
+                document.getElementById('mainTaskWarning').classList.add('hidden');
+            }
             
             document.getElementById('taskModal').classList.remove('hidden');
         };
 
-        window.closeModal = function() {
-            document.getElementById('taskModal').classList.add('hidden');
-        };
+        window.closeModal = function() { document.getElementById('taskModal').classList.add('hidden'); };
 
-        window.saveTask = function() {
+        window.saveTaskModal = function() {
             let nName = document.getElementById('m_name').value;
             let nStart = document.getElementById('m_start').value;
             let nDue = document.getElementById('m_due').value;
             let nStatus = document.getElementById('m_status').value;
-            let nProg = document.getElementById('m_prog').value;
 
             if(!nName || !nStart || !nDue) return alert('Vui lòng nhập đủ Tên và Ngày tháng!');
 
+            let payload = { name: nName, startDate: nStart, dueDate: nDue };
+            
+            // Chỉ cập nhật Status nếu là Sub-task
+            if(!window.modalState.isMain) {
+                payload.status = nStatus;
+            }
+
             if(window.modalState.mode === 'ADD') {
-                let newId = getNextTaskId(window.currentTab, window.modalState.parentId);
-                push(tasksRef, {
-                    company: window.currentTab,
-                    taskId: newId,
-                    name: nName,
-                    startDate: nStart,
-                    dueDate: nDue,
-                    status: nStatus,
-                    progressSub: nProg
-                });
+                payload.company = window.currentTab;
+                payload.taskId = getNextTaskId(window.currentTab, window.modalState.parentId);
+                payload.archived = false;
+                push(tasksRef, payload);
             } else if (window.modalState.mode === 'EDIT') {
-                update(ref(db, 'tasks/' + window.modalState.dbKey), {
-                    name: nName, startDate: nStart, dueDate: nDue, status: nStatus, progressSub: nProg
-                });
+                update(ref(db, 'tasks/' + window.modalState.dbKey), payload);
             }
             closeModal();
         };
 
         window.deleteTask = function(dbKey, taskId) {
             let isMain = !taskId.includes('.');
-            let msg = isMain ? `CẢNH BÁO: Xóa Main Task ${taskId} sẽ KHÔNG tự động xóa Sub-task. Bạn có chắc chắn xóa?` : `Bạn có chắc muốn xóa Sub-task ${taskId}?`;
+            let msg = isMain ? `CẢNH BÁO: Xóa Main Task ${taskId} sẽ KHÔNG xóa Sub-task tự động. Đề nghị xóa Sub-task trước. Xóa ngay?` : `Xác nhận xóa Sub-task ${taskId}?`;
             if (confirm(msg)) { remove(ref(db, 'tasks/' + dbKey)); }
         };
     </script>
