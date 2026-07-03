@@ -37,57 +37,56 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - simpler approach
 self.addEventListener('fetch', event => {
   const { request } = event;
-  const url = new URL(request.url);
 
-  // For HTML requests
+  // For HTML requests - network first
   if (request.method === 'GET' && request.headers.get('accept')?.includes('text/html')) {
-    return event.respondWith(
+    event.respondWith(
       fetch(request)
-        .then(response => {
-          if (response.status === 200) {
-            const cloned = response.clone();
-            caches.open(CACHE_NAME).then(c => c.put(request, cloned));
-          }
-          return response;
-        })
         .catch(() => caches.match(request) || caches.match('./index.html'))
     );
+    return;
   }
 
-  // For CSS, JS, images - cache first, network second
-  if (request.method === 'GET') {
-    return event.respondWith(
-      caches.match(request)
-        .then(response => {
-          if (response) return response;
-          
-          // Try network and cache successful responses
-          return fetch(request)
-            .then(networkResponse => {
-              if (networkResponse && networkResponse.status === 200) {
-                const cloned = networkResponse.clone();
-                caches.open(RUNTIME_CACHE).then(c => c.put(request, cloned));
-              }
-              return networkResponse;
-            });
-        })
-        .catch(() => {
-          // Offline fallback
-          if (request.destination === 'image') {
-            return new Response('', { status: 404 });
-          }
-          return caches.match('./index.html');
-        })
-    );
-  }
-
-  // For other requests (POST, etc), go straight to network
-  event.respondWith(fetch(request).catch(() => {
-    return new Response('Offline', { status: 503 });
-  }));
+  // For everything else - cache first, then network
+  event.respondWith(
+    caches.match(request)
+      .then(cached => {
+        if (cached) return cached;
+        
+        return fetch(request)
+          .then(response => {
+            // Don't cache failed responses
+            if (!response || response.status !== 200) {
+              return response;
+            }
+            
+            // Cache successful responses
+            const responseClone = response.clone();
+            caches.open(RUNTIME_CACHE)
+              .then(cache => cache.put(request, responseClone))
+              .catch(() => {}); // Silently fail if cache fails
+            
+            return response;
+          })
+          .catch(() => {
+            // Return offline fallback
+            if (request.destination === 'image') {
+              return new Response('', { status: 404 });
+            }
+            return caches.match('./index.html');
+          });
+      })
+      .catch(() => {
+        // Fallback
+        if (request.destination === 'image') {
+          return new Response('', { status: 404 });
+        }
+        return caches.match('./index.html');
+      })
+  );
 });
 
 // Background sync for offline actions
