@@ -40,6 +40,12 @@ self.addEventListener('activate', event => {
 // Fetch event - simpler approach
 self.addEventListener('fetch', event => {
   const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip chrome extensions and non-http requests
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return;
+  }
 
   // For HTML requests - network first
   if (request.method === 'GET' && request.headers.get('accept')?.includes('text/html')) {
