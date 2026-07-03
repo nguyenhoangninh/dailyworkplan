@@ -6,21 +6,18 @@
     <title>Daily Work Plan - Realtime Gantt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Tùy chỉnh CSS để bảng hiển thị giống hệt Excel */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; }
         table { border-collapse: collapse; width: 100%; white-space: nowrap; }
         th, td { border: 1px solid #b4c6e7; padding: 6px 10px; text-align: left; }
         th { background-color: #1f4e78; color: white; text-align: center; font-weight: bold; }
         .text-center { text-align: center; }
-        .bg-weekend-head { background-color: #0070c0 !important; } /* Thứ 7, CN Header */
-        .bg-weekend-body { background-color: #f2f2f2; } /* Nền cột Thứ 7, CN */
+        .bg-weekend-head { background-color: #0070c0 !important; } 
+        .bg-weekend-body { background-color: #f2f2f2; } 
         
-        /* Bảng màu Trạng thái chuẩn Excel */
         .status-complete { background-color: #c6efce; color: #006100; font-style: italic; }
         .status-inprogress { background-color: #ffff99; color: #9c6500; font-style: italic; }
         .status-pending { background-color: #ffc7ce; color: #9c0006; font-style: italic; }
         
-        /* Cố định cột bên trái khi cuộn ngang */
         .table-container { overflow-x: auto; max-width: 100vw; border: 1px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px;}
         .sticky-col { position: sticky; left: 0; background-color: white; z-index: 10; border-right: 2px solid #8ea9db;}
         th.sticky-col { background-color: #1f4e78; z-index: 11; }
@@ -67,18 +64,15 @@
                 <label class="block text-xs font-bold text-gray-600">Prog % (Sub)</label>
                 <input type="number" id="f_prog" placeholder="%" class="w-20" min="0" max="100">
             </div>
-            <button id="btnAddTask" class="bg-blue-600 text-white font-bold px-6 py-2 rounded hover:bg-blue-700 h-[34px]">TẠO TASK</button>
+            <button id="btnAddTask" class="bg-blue-600 text-white font-bold px-6 py-2 rounded hover:bg-blue-700 h-[34px] transition-colors">TẠO TASK</button>
+            <button id="btnCancelEdit" class="hidden bg-gray-500 text-white font-bold px-4 py-2 rounded hover:bg-gray-600 h-[34px] transition-colors">HỦY</button>
         </div>
 
         <!-- Khung chứa bảng Excel -->
         <div class="table-container">
             <table id="ganttTable">
-                <thead id="ganttHead">
-                    <!-- Javascript sẽ tự động vẽ Header vào đây -->
-                </thead>
-                <tbody id="ganttBody">
-                    <!-- Javascript sẽ tự động vẽ Data và màu Gantt vào đây -->
-                </tbody>
+                <thead id="ganttHead"></thead>
+                <tbody id="ganttBody"></tbody>
             </table>
         </div>
     </div>
@@ -86,9 +80,9 @@
     <!-- Script kết nối Firebase & Xử lý thuật toán Gantt -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        // Cấu hình Firebase gốc của bạn
+        // Cấu hình Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA8XGvUoCBWs8WUlwC2hUEHPF6RQl6eSM0",
             authDomain: "dailyworkplan-de669.firebaseapp.com",
@@ -104,17 +98,19 @@
         const db = getDatabase(app);
         const tasksRef = ref(db, 'tasks');
 
-        // Lắng nghe dữ liệu
+        // Biến toàn cục để lưu dữ liệu và kiểm tra trạng thái Sửa
+        window.allTasks = [];
+        window.currentEditKey = null;
+
         onValue(tasksRef, (snapshot) => {
-            let tasks = [];
+            window.allTasks = [];
             snapshot.forEach((child) => {
-                tasks.push({ dbKey: child.key, ...child.val() });
+                window.allTasks.push({ dbKey: child.key, ...child.val() });
             });
-            renderGanttChart(tasks);
+            renderGanttChart(window.allTasks);
         });
 
-        // Hàm bổ trợ Date
-        function parseDate(dateStr) { return new Date(dateStr); }
+        function parseDate(dateStr) { return dateStr ? new Date(dateStr) : null; }
         function formatDateShow(dateObj) {
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             return dateObj.getDate() + "-" + months[dateObj.getMonth()];
@@ -123,9 +119,7 @@
             const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
             return days[dateObj.getDay()];
         }
-        function isWeekend(dateObj) {
-            return dateObj.getDay() === 0 || dateObj.getDay() === 6;
-        }
+        function isWeekend(dateObj) { return dateObj.getDay() === 0 || dateObj.getDay() === 6; }
 
         function renderGanttChart(tasks) {
             const thead = document.getElementById('ganttHead');
@@ -133,25 +127,22 @@
             thead.innerHTML = ''; tbody.innerHTML = '';
 
             if (tasks.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center p-4">Chưa có dữ liệu công việc.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4">Chưa có dữ liệu công việc.</td></tr>';
                 return;
             }
 
-            // 1. Tìm ngày Min và Max để vẽ trục thời gian
             let minDate = new Date("2099-12-31");
             let maxDate = new Date("1900-01-01");
             
             tasks.forEach(t => {
-                let s = new Date(t.startDate);
-                let d = new Date(t.dueDate);
-                if (s < minDate) minDate = s;
-                if (d > maxDate) maxDate = d;
+                let s = parseDate(t.startDate);
+                let d = parseDate(t.dueDate);
+                if (s && !isNaN(s) && s < minDate) minDate = s;
+                if (d && !isNaN(d) && d > maxDate) maxDate = d;
             });
 
-            // Nếu dữ liệu ngày lỗi, set mặc định
             if (minDate > maxDate) { minDate = new Date(); maxDate = new Date(); }
 
-            // Tạo mảng các ngày trên trục
             let dateRange = [];
             let curr = new Date(minDate);
             while (curr <= maxDate) {
@@ -159,7 +150,6 @@
                 curr.setDate(curr.getDate() + 1);
             }
 
-            // 2. VẼ HEADER BẢNG
             let trDay = `<tr>
                 <th rowspan="2" class="sticky-col">Company</th>
                 <th rowspan="2">Task #</th>
@@ -170,10 +160,9 @@
                 <th rowspan="2">Status</th>
                 <th rowspan="2">Progress %<br>(Main)</th>
                 <th rowspan="2">Progress %<br>(Sub)</th>
-                <th rowspan="2">Xóa</th>`;
+                <th rowspan="2" style="min-width: 90px;">Hành động</th>`;
             
             let trDate = `<tr>`;
-
             dateRange.forEach(d => {
                 let headClass = isWeekend(d) ? "bg-weekend-head" : "";
                 trDay += `<th class="${headClass}">${formatDayName(d)}</th>`;
@@ -182,54 +171,56 @@
             trDay += `</tr>`; trDate += `</tr>`;
             thead.innerHTML = trDay + trDate;
 
-            // 3. TÍNH TOÁN PROGRESS MAIN VÀ VẼ BODY
             tasks.forEach(task => {
-                // Tính toán trung bình Subtasks cho Main task
                 let mainProgress = "";
-                if (task.taskId && !task.taskId.includes('.')) {
-                    let subTasks = tasks.filter(t => t.taskId && t.taskId.startsWith(task.taskId + '.'));
+                let taskComp = task.company || '';
+                let tId = task.taskId || '';
+                let tName = task.name || '';
+                let pSub = (task.progressSub !== undefined && task.progressSub !== '') ? task.progressSub : '';
+
+                if (tId && !tId.includes('.')) {
+                    let subTasks = tasks.filter(t => t.taskId && t.taskId.startsWith(tId + '.'));
                     if (subTasks.length > 0) {
                         let sum = 0; let count = 0;
                         subTasks.forEach(st => {
-                            if (st.progressSub !== "") { sum += parseFloat(st.progressSub); count++; }
+                            if (st.progressSub !== undefined && st.progressSub !== "") { sum += parseFloat(st.progressSub); count++; }
                         });
                         if (count > 0) mainProgress = Math.round(sum / count);
                     } else {
-                        mainProgress = task.progressSub; // Nếu không có sub, lấy chính nó
+                        mainProgress = pSub;
                     }
                 }
 
-                // Tính toán số ngày
-                let sDate = new Date(task.startDate);
-                let dDate = new Date(task.dueDate);
-                let daysCount = Math.round((dDate - sDate) / (1000 * 60 * 60 * 24)) + 1;
+                let sDate = parseDate(task.startDate);
+                let dDate = parseDate(task.dueDate);
+                let isValidDates = (sDate && !isNaN(sDate) && dDate && !isNaN(dDate));
                 
-                // Định dạng hiển thị ngày
-                let sShow = ("0" + sDate.getDate()).slice(-2) + "/" + ("0" + (sDate.getMonth() + 1)).slice(-2) + "/" + sDate.getFullYear();
-                let dShow = ("0" + dDate.getDate()).slice(-2) + "/" + ("0" + (dDate.getMonth() + 1)).slice(-2) + "/" + dDate.getFullYear();
+                let daysCount = isValidDates ? Math.round((dDate - sDate) / (1000 * 60 * 60 * 24)) + 1 : '';
+                let sShow = isValidDates ? ("0" + sDate.getDate()).slice(-2) + "/" + ("0" + (sDate.getMonth() + 1)).slice(-2) + "/" + sDate.getFullYear() : '';
+                let dShow = isValidDates ? ("0" + dDate.getDate()).slice(-2) + "/" + ("0" + (dDate.getMonth() + 1)).slice(-2) + "/" + dDate.getFullYear() : '';
 
-                // Xác định màu sắc Status
                 let statusClass = task.status === 'Complete' ? 'status-complete' : 
                                   task.status === 'In Progress' ? 'status-inprogress' : 'status-pending';
 
-                // In CSS cho dòng task con
-                let nameIndent = task.taskId && task.taskId.includes('.') ? '&rarr; ' : '';
+                let nameIndent = tId && tId.includes('.') ? '&rarr; ' : '';
 
                 let rowHtml = `<tr>
-                    <td class="sticky-col bg-white">${task.company}</td>
-                    <td class="text-center">${task.taskId}</td>
-                    <td>${nameIndent}${task.name}</td>
+                    <td class="sticky-col bg-white">${taskComp}</td>
+                    <td class="text-center">${tId}</td>
+                    <td>${nameIndent}${tName}</td>
                     <td class="text-center">${sShow}</td>
                     <td class="text-center">${dShow}</td>
                     <td class="text-center">${daysCount > 0 ? daysCount : ''}</td>
-                    <td class="text-center ${statusClass}">${task.status}</td>
+                    <td class="text-center ${statusClass}">${task.status || 'Pending'}</td>
                     <td class="text-center ${mainProgress !== "" ? statusClass : ''}">${mainProgress}</td>
-                    <td class="text-center ${task.progressSub !== "" ? statusClass : ''}">${task.progressSub}</td>
-                    <td class="text-center"><button onclick="deleteTask('${task.dbKey}')" class="text-red-500 hover:text-red-700 font-bold">X</button></td>`;
+                    <td class="text-center ${pSub !== "" ? statusClass : ''}">${pSub}</td>
+                    <td class="text-center">
+                        <button onclick="editTask('${task.dbKey}')" class="text-blue-600 font-bold hover:underline mr-2">Sửa</button>
+                        <button onclick="deleteTask('${task.dbKey}')" class="text-red-500 font-bold hover:underline">Xóa</button>
+                    </td>`;
 
-                // Render ô màu Gantt
                 dateRange.forEach(d => {
-                    let isTaskDay = (d >= sDate && d <= dDate);
+                    let isTaskDay = isValidDates && (d >= sDate && d <= dDate);
                     let cellClass = isTaskDay ? statusClass : (isWeekend(d) ? "bg-weekend-body" : "");
                     rowHtml += `<td class="${cellClass}"></td>`;
                 });
@@ -239,39 +230,88 @@
             });
         }
 
-        // XỬ LÝ SỰ KIỆN THÊM TASK
+        // --- XỬ LÝ SỰ KIỆN NÚT BẤM CHÍNH ---
         document.getElementById('btnAddTask').addEventListener('click', () => {
             const nName = document.getElementById('f_name').value;
             const nStart = document.getElementById('f_start').value;
             const nDue = document.getElementById('f_due').value;
 
-            if (!nName || !nStart || !nDue) {
-                alert('Vui lòng nhập Tên công việc, Ngày bắt đầu và Ngày kết thúc!');
+            if (!nName) {
+                alert('Vui lòng nhập Tên công việc!');
                 return;
             }
 
-            push(tasksRef, {
+            let taskData = {
                 company: document.getElementById('f_company').value,
                 taskId: document.getElementById('f_taskId').value,
-                name: document.getElementById('f_name').value,
+                name: nName,
                 startDate: nStart,
                 dueDate: nDue,
                 status: document.getElementById('f_status').value,
                 progressSub: document.getElementById('f_prog').value
-            });
+            };
 
-            // Xóa form sau khi add
-            document.getElementById('f_taskId').value = '';
-            document.getElementById('f_name').value = '';
-            document.getElementById('f_prog').value = '';
+            if (window.currentEditKey) {
+                // Đang ở chế độ Sửa -> Cập nhật dữ liệu
+                update(ref(db, 'tasks/' + window.currentEditKey), taskData);
+            } else {
+                // Chế độ Bình thường -> Tạo mới
+                push(tasksRef, taskData);
+            }
+            resetForm();
         });
 
-        // Hàm xóa gắn vào window
+        document.getElementById('btnCancelEdit').addEventListener('click', () => {
+            resetForm();
+        });
+
+        // --- CÁC HÀM GẮN VÀO WINDOW ---
+        window.editTask = function(dbKey) {
+            const task = window.allTasks.find(t => t.dbKey === dbKey);
+            if(task) {
+                document.getElementById('f_company').value = task.company || '';
+                document.getElementById('f_taskId').value = task.taskId || '';
+                document.getElementById('f_name').value = task.name || '';
+                document.getElementById('f_start').value = task.startDate || '';
+                document.getElementById('f_due').value = task.dueDate || '';
+                document.getElementById('f_status').value = task.status || 'Pending';
+                document.getElementById('f_prog').value = task.progressSub !== undefined ? task.progressSub : '';
+
+                window.currentEditKey = dbKey;
+                
+                // Đổi giao diện nút bấm
+                const btn = document.getElementById('btnAddTask');
+                btn.innerText = 'CẬP NHẬT';
+                btn.classList.replace('bg-blue-600', 'bg-green-600');
+                btn.classList.replace('hover:bg-blue-700', 'hover:bg-green-700');
+                document.getElementById('btnCancelEdit').classList.remove('hidden');
+            }
+        };
+
         window.deleteTask = function(dbKey) {
             if (confirm('Bạn có chắc chắn muốn xóa dòng công việc này?')) {
                 remove(ref(db, 'tasks/' + dbKey));
             }
         };
+
+        function resetForm() {
+            document.getElementById('f_company').value = '';
+            document.getElementById('f_taskId').value = '';
+            document.getElementById('f_name').value = '';
+            document.getElementById('f_start').value = '';
+            document.getElementById('f_due').value = '';
+            document.getElementById('f_status').value = 'Pending';
+            document.getElementById('f_prog').value = '';
+
+            window.currentEditKey = null;
+            
+            // Trả giao diện nút về mặc định
+            const btn = document.getElementById('btnAddTask');
+            btn.innerText = 'TẠO TASK';
+            btn.classList.replace('bg-green-600', 'bg-blue-600');
+            btn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700');
+            document.getElementById('btnCancelEdit').classList.add('hidden');
+        }
     </script>
 </body>
 </html>
