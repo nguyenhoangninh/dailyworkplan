@@ -7,28 +7,107 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Phông chữ chuẩn Apple */
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; background-color: #f4f5f8; color: #1d1d1f; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); color: #1e293b; }
         
         /* Bảng thiết kế hiện đại - Responsive */
         table { border-collapse: separate; border-spacing: 0; width: 100%; white-space: nowrap; }
-        th, td { border-bottom: 1px solid #f0f0f0; padding: 10px 10px; text-align: left; vertical-align: middle; }
+        th, td { border-bottom: 1px solid #e2e8f0; padding: 10px 10px; text-align: left; vertical-align: middle; }
         
-        /* Header bảng trong suốt có làm mờ (Backdrop Blur) - Prettier */
+        /* Header bảng trong suốt có làm mờ (Backdrop Blur) - Prettier & Sticky */
         th { 
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 248, 250, 0.95) 100%); 
             backdrop-filter: blur(12px); 
             -webkit-backdrop-filter: blur(12px);
-            color: #5a5a5f; 
+            color: #475569; 
             text-align: center; 
             font-weight: 800; 
             font-size: 10px; 
             text-transform: uppercase; 
             letter-spacing: 0.06em; 
-            border-bottom: 2px solid #e5e5ea; 
+            border-bottom: 2px solid #e2e8f0; 
             position: sticky; 
             top: 0; 
             z-index: 20;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+        }
+        
+        /* Zoom Controls - Inline Style */
+        .zoom-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .zoom-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+            min-width: 36px;
+        }
+        
+        .zoom-btn:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+        }
+        
+        .zoom-btn:active {
+            transform: translateY(0);
+        }
+        
+        .zoom-btn-fit {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+            font-weight: 700;
+            font-size: 10px;
+            min-width: 38px;
+        }
+        
+        .zoom-btn-fit:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+        }
+        
+        .zoom-display {
+            color: #1e293b;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: center;
+            font-size: 12px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        
+        /* Header Control Container */
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        /* Table Wrapper with Zoom */
+        #tableWrapper {
+            transform-origin: top left;
+            transition: transform 0.3s ease;
         }
         .text-center { text-align: center; }
         
@@ -43,17 +122,17 @@
             min-width: 32px;
             height: 40px;
         }
-        .gantt-complete { background-color: #34c759 !important; } /* iOS Green */
-        .gantt-inprogress { background-color: #ff9f0a !important; } /* iOS Orange */
-        .gantt-pending { background-color: #ff3b30 !important; } /* iOS Red */
-        .gantt-notstart { background-color: #e5e5ea !important; } /* Gray */
+        .gantt-complete { background-color: #10b981 !important; } /* iOS Green */
+        .gantt-inprogress { background-color: #f59e0b !important; } /* iOS Orange */
+        .gantt-pending { background-color: #f43f5e !important; } /* iOS Red */
+        .gantt-notstart { background-color: #e2e8f0 !important; } /* Gray */
         
         /* Mốc Today (Star indicator in cell) */
         .today-col { 
-            background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(255, 59, 48, 0.08) 100%) !important; 
-            border-left: 2px solid #ff3b30 !important; 
-            border-right: 2px solid #ff3b30 !important;
-            box-shadow: inset 0 0 0 1px rgba(255, 59, 48, 0.2) !important;
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, rgba(244, 63, 94, 0.08) 100%) !important; 
+            border-left: 2px solid #f43f5e !important; 
+            border-right: 2px solid #f43f5e !important;
+            box-shadow: inset 0 0 0 1px rgba(244, 63, 94, 0.15) !important;
             position: relative;
         }
         .today-col::before {
@@ -68,8 +147,8 @@
         .today-head { 
             color: white !important; 
             font-weight: 900 !important; 
-            background: linear-gradient(135deg, #ff3b30 0%, #ff453a 100%) !important; 
-            border-bottom: 3px solid #ff3b30 !important;
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important; 
+            border-bottom: 3px solid #f43f5e !important;
             position: relative;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
@@ -89,7 +168,7 @@
             border-bottom: 3px solid #f59e0b !important;
         } 
         .bg-weekend-body { 
-            background: linear-gradient(180deg, #fffbf0 0%, #fff9eb 100%) !important;
+            background: linear-gradient(180deg, #f8f0f5 0%, #f8f0f5 100%) !important;
             border-left: 1px solid #fcd34d !important;
             border-right: 1px solid #fcd34d !important;
         } 
@@ -98,7 +177,7 @@
         .table-container { 
             overflow-x: auto; 
             max-width: 100%; 
-            border: 1px solid #e5e5ea; 
+            border: 1.5px solid #e2e8f0; 
             box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04); 
             border-radius: 18px; 
             background: white;
@@ -106,33 +185,209 @@
         .sticky-col { 
             position: sticky; 
             left: 0; 
-            background-color: rgba(255, 255, 255, 0.98); 
+            background-color: rgba(255, 255, 255, 0.99); 
             z-index: 10; 
-            border-right: 2px solid #e5e5ea;
+            border-right: 2px solid #e2e8f0;
             backdrop-filter: blur(8px);
         }
         th.sticky-col { z-index: 21; background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 248, 250, 0.95) 100%); }
         
         /* Input & Select phong cách iOS - Responsive */
-        input, select { border: 1px solid #d2d2d7; padding: 8px 10px; border-radius: 8px; font-size: 12px; outline: none; background-color: #fafafa; transition: border-color 0.2s; }
-        input:focus, select:focus { border-color: #007aff; background-color: white; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1); }
+        input, select { border: 1px solid #d2d2d7; padding: 8px 10px; border-radius: 8px; font-size: 12px; outline: none; background-color: #f8fafc; transition: border-color 0.2s; }
+        input:focus, select:focus { border-color: #2563eb; background-color: white; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1); }
         
-        /* Tab Segmented Control (Apple UI) - Compact */
-        .tabs-container { display: inline-flex; background: #e5e5ea; padding: 3px; border-radius: 10px; margin-bottom: 16px; gap: 2px; flex-wrap: wrap; }
-        .tab-btn { padding: 6px 16px; font-weight: 600; cursor: pointer; color: #86868b; transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); border-radius: 6px; font-size: 11px;}
-        .tab-btn.active { background: white; color: #1d1d1f; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-        .tab-btn:hover:not(.active) { color: #1d1d1f; }
+        /* Tab Segmented Control - Professional Design */
+        .tabs-container { 
+            display: inline-flex; 
+            background: transparent;
+            padding: 0;
+            border-radius: 12px;
+            margin-bottom: 0;
+            gap: 0;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e2e8f0;
+            align-items: center;
+        }
+        
+        .tab-btn { 
+            padding: 10px 18px;
+            font-weight: 700; 
+            cursor: pointer; 
+            color: #64748b; 
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border-radius: 0;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            position: relative;
+            border: none;
+            background: transparent;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: currentColor;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .tab-btn:hover:not(.active) { 
+            color: #1e293b;
+            background: rgba(15, 23, 42, 0.02);
+            border-bottom-color: rgba(59, 130, 246, 0.2);
+        }
+        
+        .tab-btn:hover:not(.active)::after {
+            transform: scaleX(0.5);
+        }
+        
+        .tab-btn.active { 
+            background: transparent;
+            color: #2563eb;
+            border-bottom: 3px solid #2563eb;
+            box-shadow: none;
+            font-weight: 800;
+        }
+        
+        /* Color coding for special tabs */
+        #tab-DASHBOARD.active { 
+            color: #7c3aed; 
+            border-bottom-color: #7c3aed; 
+        }
+        #tab-DASHBOARD:hover:not(.active) { 
+            border-bottom-color: rgba(124, 58, 237, 0.2); 
+            color: #6d28d9;
+        }
+        
+        #tab-DONE.active { 
+            color: #10b981; 
+            border-bottom-color: #10b981; 
+        }
+        #tab-DONE:hover:not(.active) { 
+            border-bottom-color: rgba(52, 199, 89, 0.2);
+            color: #2c9f4b;
+        }
         
         /* Nút bấm (Buttons) - Compact */
-        .btn-primary { background: #007aff; color: white; border-radius: 8px; font-weight: 600; padding: 6px 14px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0, 122, 255, 0.3); font-size: 12px; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border-radius: 8px; font-weight: 600; padding: 6px 14px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3); font-size: 12px; }
         .btn-primary:hover { background: #006ce6; transform: scale(0.98); }
+        
+        /* Action Menu - Compact Dropdown Style */
+        .action-menu-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .action-menu-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.08) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            cursor: pointer;
+            font-size: 18px;
+            color: #3b82f6;
+            transition: all 0.2s;
+        }
+        
+        .action-menu-trigger:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.12) 100%);
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+        }
+        
+        .action-menu-trigger.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(99, 102, 241, 0.15) 100%);
+            border-color: #3b82f6;
+        }
+        
+        .action-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+            z-index: 1000;
+            min-width: 180px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .action-menu.show {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .action-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: none;
+            background: transparent;
+            color: #1e293b;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .action-menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .action-menu-item:hover {
+            background: #f8fafc;
+        }
+        
+        .action-menu-item.edit { color: #2563eb; }
+        .action-menu-item.delete { color: #f43f5e; }
+        .action-menu-item.add { color: #10b981; }
+        .action-menu-item.archive { color: #7c3aed; }
+        .action-menu-item.archived { color: #10b981; font-weight: 700; }
+        
+        .action-menu-icon {
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+        }
         
         /* Nút Hành động nhỏ trong bảng - Compact */
         .action-btn { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; transition: background 0.2s; cursor: pointer; white-space: nowrap; }
-        .btn-edit { color: #007aff; background: rgba(0, 122, 255, 0.1); } .btn-edit:hover { background: rgba(0, 122, 255, 0.2); }
-        .btn-delete { color: #ff3b30; background: rgba(255, 59, 48, 0.1); } .btn-delete:hover { background: rgba(255, 59, 48, 0.2); }
-        .btn-addsub { color: #34c759; background: rgba(52, 199, 89, 0.1); } .btn-addsub:hover { background: rgba(52, 199, 89, 0.2); }
-        .btn-archive { color: #5856d6; background: rgba(88, 86, 214, 0.1); } .btn-archive:hover { background: rgba(88, 86, 214, 0.2); }
+        .btn-edit { color: #2563eb; background: rgba(59, 130, 246, 0.1); } .btn-edit:hover { background: rgba(59, 130, 246, 0.2); }
+        .btn-delete { color: #f43f5e; background: rgba(244, 63, 94, 0.1); } .btn-delete:hover { background: rgba(244, 63, 94, 0.15); }
+        .btn-addsub { color: #10b981; background: rgba(16, 185, 129, 0.1); } .btn-addsub:hover { background: rgba(16, 185, 129, 0.2); }
+        .btn-archive { color: #6366f1; background: rgba(99, 102, 241, 0.1); } .btn-archive:hover { background: rgba(99, 102, 241, 0.2); }
         
         /* Khoảng trắng giữa các Main Task */
         .spacer-row td { height: 32px; background-color: #ffffff; border: none !important; }
@@ -151,6 +406,11 @@
             .w-36 { width: 120px !important; }
             .w-24 { width: 80px !important; }
             .w-40 { width: 120px !important; }
+            .zoom-controls { gap: 8px; padding: 8px 12px; font-size: 10px; }
+            .zoom-btn { padding: 5px 10px; font-size: 10px; min-width: 34px; }
+            .zoom-btn-fit { min-width: 38px; font-size: 10px; }
+            .zoom-display { font-size: 10px; min-width: 45px; }
+            .tab-btn { padding: 9px 16px; font-size: 11px; }
         }
         
         @media (max-width: 768px) {
@@ -163,6 +423,11 @@
             .w-36 { width: 100px !important; }
             .w-24 { width: 60px !important; }
             .w-40 { width: 100px !important; }
+            .zoom-controls { gap: 6px; padding: 8px 10px; font-size: 9px; white-space: normal; }
+            .zoom-btn { padding: 4px 8px; font-size: 9px; min-width: 30px; }
+            .zoom-btn-fit { min-width: 34px; font-size: 9px; }
+            .zoom-display { font-size: 10px; min-width: 40px; }
+            .tab-btn { padding: 8px 14px; font-size: 10px; letter-spacing: 0.03em; }
         }
         
         @media (max-width: 480px) {
@@ -172,13 +437,17 @@
             .task-name-col { min-width: 100px; max-width: 140px; font-size: 9px; }
             .gantt-cell { padding: 4px 2px !important; min-width: 20px; height: 28px; }
             input, select { padding: 5px 8px; font-size: 10px; }
-            .tabs-container { padding: 2px; margin-bottom: 12px; }
-            .tab-btn { padding: 4px 10px; font-size: 9px; }
+            .tabs-container { padding: 2px; margin-bottom: 12px; flex: 1 1 100%; }
+            .tab-btn { padding: 6px 10px; font-size: 8px; letter-spacing: 0.02em; }
             .btn-primary { padding: 5px 10px; font-size: 10px; }
             .w-36 { width: 80px !important; }
             .w-24 { width: 50px !important; }
             .w-40 { width: 80px !important; }
             .w-full { width: 100% !important; }
+            .zoom-controls { gap: 4px; padding: 6px 8px; font-size: 8px; flex: 1 1 100%; order: 3; }
+            .zoom-btn { padding: 4px 6px; font-size: 8px; min-width: 26px; }
+            .zoom-btn-fit { min-width: 30px; padding: 4px 5px; font-size: 7px; }
+            .zoom-display { font-size: 9px; min-width: 35px; }
         }
         
         /* Form Container Compact */
@@ -202,40 +471,51 @@
 </head>
 <body class="p-6">
 
-    <div class="max-w-[98%] mx-auto bg-white p-8 rounded-2xl shadow-sm border border-[#e5e5ea]">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-[#1d1d1f] tracking-tight">Master Work Plan</h1>
+    <div class="max-w-[98%] mx-auto bg-white p-8 rounded-2xl shadow-[0_2px_8px_rgba(15,23,42,0.05)] border border-[#e2e8f0]">
+        <!-- HEADER WITH TITLE, TABS AND ZOOM CONTROLS -->
+        <div class="flex justify-between items-center gap-6 mb-6 flex-wrap">
+            <h1 class="text-2xl font-bold text-[#1e293b] tracking-tight">Master Work Plan</h1>
             
             <!-- TABS NAV (Segmented Control) -->
             <div class="tabs-container">
                 <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">SVL</div>
                 <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">SGV</div>
                 <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">SVN</div>
-                <div id="tab-DASHBOARD" class="tab-btn text-[#af52de]" onclick="switchTab('DASHBOARD')">Báo cáo & Gantt</div>
-                <div id="tab-DONE" class="tab-btn text-[#34c759]" onclick="switchTab('DONE')">Đã lưu trữ</div>
+                <div id="tab-DASHBOARD" class="tab-btn text-[#7c3aed]" onclick="switchTab('DASHBOARD')">Báo cáo & Gantt</div>
+                <div id="tab-DONE" class="tab-btn text-[#10b981]" onclick="switchTab('DONE')">Đã lưu trữ</div>
+            </div>
+            
+            <!-- ZOOM CONTROLS -->
+            <div class="zoom-controls">
+                <span style="color: #64748b; font-size: 11px; font-weight: 600;">Zoom:</span>
+                <button class="zoom-btn" onclick="zoomOut()">−</button>
+                <span class="zoom-display" id="zoomLevel">100%</span>
+                <button class="zoom-btn" onclick="zoomIn()">+</button>
+                <button class="zoom-btn zoom-btn-fit" onclick="zoomFit()" title="Fit to screen">Fit</button>
+                <button class="zoom-btn" onclick="zoomReset()" style="background: linear-gradient(135deg, #86868b 0%, #6b6b70 100%); box-shadow: 0 2px 6px rgba(0,0,0,0.15);">Reset</button>
             </div>
         </div>
         
         <!-- FORM TẠO NHANH -->
-        <div class="flex flex-wrap gap-4 items-end bg-[#f4f5f8] p-5 rounded-[16px] mb-8 border border-[#e5e5ea]">
+        <div class="flex flex-wrap gap-4 items-end bg-[#f9fafb] p-5 rounded-[16px] mb-8 border border-[#e2e8f0]">
             <div>
-                <label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Công ty</label>
-                <select id="q_company" class="w-24 font-semibold text-[#1d1d1f]">
+                <label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Công ty</label>
+                <select id="q_company" class="w-24 font-semibold text-[#1e293b]">
                     <option value="SVL">SVL</option>
                     <option value="SGV">SGV</option>
                     <option value="SVN">SVN</option>
                 </select>
             </div>
             <div class="flex-1 min-w-[250px]">
-                <label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Tên Công Việc Chính</label>
+                <label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Tên Công Việc Chính</label>
                 <input type="text" id="q_name" placeholder="Nhập tên công việc..." class="w-full">
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Từ ngày</label>
+                <label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Từ ngày</label>
                 <input type="date" id="q_start" class="w-36">
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Đến ngày</label>
+                <label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Đến ngày</label>
                 <input type="date" id="q_due" class="w-36">
             </div>
             <button onclick="quickAddMainTask()" class="btn-primary flex items-center gap-1 mb-[2px]">
@@ -245,59 +525,61 @@
         </div>
 
         <!-- BỘ LỌC DASHBOARD (Ẩn/Hiện tự động) -->
-        <div id="dashboardFilters" class="hidden flex gap-4 flex-wrap items-end bg-[#f4f5f8] p-5 rounded-[16px] mb-6 border border-[#e5e5ea]">
-            <div><label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Từ ngày</label><input type="date" id="filterStart"></div>
-            <div><label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Đến ngày</label><input type="date" id="filterEnd"></div>
-            <div><label class="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Trạng thái</label>
+        <div id="dashboardFilters" class="hidden flex gap-4 flex-wrap items-end bg-[#f9fafb] p-5 rounded-[16px] mb-6 border border-[#e2e8f0]">
+            <div><label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Từ ngày</label><input type="date" id="filterStart"></div>
+            <div><label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Đến ngày</label><input type="date" id="filterEnd"></div>
+            <div><label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Trạng thái</label>
                 <select id="filterStatus" class="w-40 font-semibold">
                     <option value="ALL">Tất cả</option>
                     <option value="Complete">Hoàn thành</option>
                     <option value="Incomplete">Chưa hoàn thành</option>
                 </select>
             </div>
-            <button onclick="renderView()" class="btn-primary bg-[#af52de] shadow-none hover:bg-[#9a41c2] mb-[2px]">Lọc dữ liệu</button>
+            <button onclick="renderView()" class="btn-primary bg-[#7c3aed] shadow-none hover:bg-[#6d28d9] mb-[2px]">Lọc dữ liệu</button>
         </div>
 
         <!-- CHÚ GIẢI GANTT -->
-        <div class="flex gap-4 text-xs font-semibold items-center mb-3 justify-end text-[#86868b]">
-            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 bg-[#34c759] rounded-full"></span> Complete</span>
+        <div class="flex gap-4 text-xs font-semibold items-center mb-3 justify-end text-[#64748b]">
+            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 bg-[#10b981] rounded-full"></span> Complete</span>
             <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 bg-[#ff9f0a] rounded-full"></span> In Progress</span>
-            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 bg-[#ff3b30] rounded-full"></span> Pending</span>
-            <span class="flex items-center gap-1.5 border-l border-[#d2d2d7] pl-3"><span class="inline-block w-3 h-3 bg-[rgba(255,59,48,0.2)] border border-[#ff3b30] rounded-full"></span> Today Marker</span>
+            <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-3 bg-[#f43f5e] rounded-full"></span> Pending</span>
+            <span class="flex items-center gap-1.5 border-l border-[#cbd5e1] pl-3"><span class="inline-block w-3 h-3 bg-[rgba(255,59,48,0.2)] border border-[#f43f5e] rounded-full"></span> Today Marker</span>
         </div>
 
         <!-- UNIFIED TABLE CHO TẤT CẢ CÁC TAB -->
-        <div class="table-container">
-            <table id="mainTable">
-                <thead id="mainHead"></thead>
-                <tbody id="mainBody"></tbody>
-            </table>
+        <div id="tableWrapper">
+            <div class="table-container">
+                <table id="mainTable">
+                    <thead id="mainHead"></thead>
+                    <tbody id="mainBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!-- MODAL THÊM/SỬA TASK -->
     <div id="taskModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-[500px] border border-[#e5e5ea]">
-            <h3 id="modalTitle" class="text-xl font-bold text-[#1d1d1f] mb-6">Thông tin Công Việc</h3>
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-[500px] border border-[#e2e8f0]">
+            <h3 id="modalTitle" class="text-xl font-bold text-[#1e293b] mb-6">Thông tin Công Việc</h3>
             <div class="space-y-5">
                 <div>
-                    <label class="block text-[12px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Tên công việc <span class="text-[#ff3b30]">*</span></label>
+                    <label class="block text-[12px] font-bold text-[#64748b] uppercase tracking-wider mb-2">Tên công việc <span class="text-[#f43f5e]">*</span></label>
                     <input type="text" id="m_name" class="w-full">
                 </div>
                 <div class="flex gap-4">
                     <div class="w-1/2">
-                        <label class="block text-[12px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Bắt đầu <span class="text-[#ff3b30]">*</span></label>
+                        <label class="block text-[12px] font-bold text-[#64748b] uppercase tracking-wider mb-2">Bắt đầu <span class="text-[#f43f5e]">*</span></label>
                         <input type="date" id="m_start" class="w-full">
                     </div>
                     <div class="w-1/2">
-                        <label class="block text-[12px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Kết thúc <span class="text-[#ff3b30]">*</span></label>
+                        <label class="block text-[12px] font-bold text-[#64748b] uppercase tracking-wider mb-2">Kết thúc <span class="text-[#f43f5e]">*</span></label>
                         <input type="date" id="m_due" class="w-full">
                     </div>
                 </div>
                 <div id="statusControlBox" class="flex gap-4">
                     <div class="w-full">
-                        <label class="block text-[12px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Trạng thái Sub-task</label>
-                        <select id="m_status" class="w-full font-semibold bg-[#fafafa]">
+                        <label class="block text-[12px] font-bold text-[#64748b] uppercase tracking-wider mb-2">Trạng thái Sub-task</label>
+                        <select id="m_status" class="w-full font-semibold bg-[#f8fafc]">
                             <option value="Not Start">Not Start (0%)</option>
                             <option value="Pending">Pending (25%)</option>
                             <option value="In Progress">In Progress (50%)</option>
@@ -305,14 +587,14 @@
                         </select>
                     </div>
                 </div>
-                <div id="mainTaskWarning" class="hidden text-[12px] font-medium text-[#86868b] bg-[#f4f5f8] p-3 rounded-xl border border-[#e5e5ea] flex items-start gap-2">
+                <div id="mainTaskWarning" class="hidden text-[12px] font-medium text-[#64748b] bg-[#f9fafb] p-3 rounded-xl border border-[#e2e8f0] flex items-start gap-2">
                     <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-[#007aff]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span>Trạng thái và tiến độ của Công việc Chính (Main Task) được tính toán tự động dựa trên tổng các Sub-task con.</span>
                 </div>
             </div>
             <div class="mt-8 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-5 py-2.5 bg-[#f4f5f8] text-[#1d1d1f] rounded-xl font-bold hover:bg-[#e5e5ea] transition-colors">Hủy Bỏ</button>
-                <button onclick="saveTaskModal()" class="px-6 py-2.5 bg-[#007aff] text-white rounded-xl font-bold hover:bg-[#006ce6] transition-colors shadow-md">Lưu Lại</button>
+                <button onclick="closeModal()" class="px-5 py-2.5 bg-[#f9fafb] text-[#1e293b] rounded-xl font-bold hover:bg-[#e2e8f0] transition-colors">Hủy Bỏ</button>
+                <button onclick="saveTaskModal()" class="px-6 py-2.5 bg-[#007aff] text-white rounded-xl font-bold hover:bg-[#2563eb] transition-colors shadow-md">Lưu Lại</button>
             </div>
         </div>
     </div>
@@ -341,6 +623,68 @@
         window.allTasks = [];
         window.currentTab = 'SVL';
         window.modalState = { mode: '', parentId: null, dbKey: null, isMain: false };
+
+        // ZOOM CONTROL FUNCTIONS
+        let currentZoom = 100;
+        const minZoom = 50;
+        const maxZoom = 200;
+        const zoomStep = 10;
+
+        window.zoomIn = function() {
+            if (currentZoom < maxZoom) {
+                currentZoom += zoomStep;
+                applyZoom();
+            }
+        };
+
+        window.zoomOut = function() {
+            if (currentZoom > minZoom) {
+                currentZoom -= zoomStep;
+                applyZoom();
+            }
+        };
+
+        window.zoomReset = function() {
+            currentZoom = 100;
+            applyZoom();
+        };
+
+        window.applyZoom = function() {
+            const wrapper = document.getElementById('tableWrapper');
+            const scale = currentZoom / 100;
+            wrapper.style.transform = `scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = currentZoom + '%';
+            
+            // Adjust wrapper height and width for proper scrolling
+            wrapper.style.width = (100 / scale) + '%';
+            wrapper.style.height = 'auto';
+        };
+
+        window.zoomFit = function() {
+            try {
+                const tableContainer = document.querySelector('.table-container');
+                const tableElement = document.getElementById('mainTable');
+                const mainContainer = document.querySelector('.max-w-\\[98\\%\\]');
+                
+                if (!tableElement || !mainContainer) return;
+                
+                // Get dimensions
+                const tableWidth = tableElement.scrollWidth;
+                const containerWidth = mainContainer.offsetWidth - 32; // Subtract padding
+                
+                // Calculate the zoom level needed to fit the table
+                const fitZoom = Math.floor((containerWidth / tableWidth) * 100);
+                
+                // Constrain to min/max range
+                currentZoom = Math.max(minZoom, Math.min(maxZoom, fitZoom));
+                
+                applyZoom();
+            } catch (e) {
+                console.log('Fit zoom calculation error, using 100%');
+                currentZoom = 100;
+                applyZoom();
+            }
+        };
 
         onValue(tasksRef, (snapshot) => {
             window.allTasks = [];
@@ -436,7 +780,7 @@
             thead.innerHTML = ''; tbody.innerHTML = '';
             
             if(tasks.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="100%" class="text-center py-12 text-[#86868b] text-sm">Danh sách trống. Tạo công việc mới để bắt đầu.</td></tr>`; 
+                tbody.innerHTML = `<tr><td colspan="100%" class="text-center py-12 text-[#64748b] text-sm">Danh sách trống. Tạo công việc mới để bắt đầu.</td></tr>`; 
                 return; 
             }
 
@@ -517,31 +861,58 @@
                 // THIẾT KẾ BADGE KHOANH TRÒN CHO MAIN TASK
                 let badge = isMain 
                     ? `<div class="w-7 h-7 mx-auto rounded-full bg-[#007aff] text-white flex items-center justify-center text-[11px] font-bold shadow-md">${task.taskId}</div>` 
-                    : `<span class="text-[#86868b] text-[12px] font-bold">${task.taskId}</span>`;
+                    : `<span class="text-[#64748b] text-[12px] font-bold">${task.taskId}</span>`;
 
-                let indent = isMain ? 'font-bold text-[13px] text-[#1d1d1f]' : 'pl-8 text-[#475569]';
+                let indent = isMain ? 'font-bold text-[13px] text-[#1e293b]' : 'pl-8 text-[#475569]';
                 
-                // Khung Hành Động Bo Tròn
-                let actionBtns = `<button onclick="editTask('${task.dbKey}')" class="action-btn btn-edit mr-1">Sửa</button>
-                                  <button onclick="deleteTask('${task.dbKey}', '${task.taskId}')" class="action-btn btn-delete mr-1">Xóa</button>`;
+                // Khung Hành Động - Dropdown Menu
+                let actionMenuId = `menu-${task.dbKey}`;
+                let actionBtns = `
+                    <div class="action-menu-wrapper">
+                        <button class="action-menu-trigger" onclick="toggleActionMenu('${actionMenuId}')" title="Tùy chọn">⋮</button>
+                        <div class="action-menu" id="${actionMenuId}">`;
                 
+                // Always show Edit & Delete
+                actionBtns += `<button class="action-menu-item edit" onclick="editTask('${task.dbKey}')" title="Chỉnh sửa">
+                                <span class="action-menu-icon">✏️</span>
+                                <span>Sửa</span>
+                              </button>`;
+                actionBtns += `<button class="action-menu-item delete" onclick="deleteTask('${task.dbKey}', '${task.taskId}')" title="Xóa">
+                                <span class="action-menu-icon">🗑️</span>
+                                <span>Xóa</span>
+                              </button>`;
+                
+                // Show Add Sub & Archive only for Main Tasks
                 if(isMain && !isDoneTab) {
-                    actionBtns += `<button onclick="openModal('${task.taskId}')" class="action-btn btn-addsub mr-1">+ Sub</button>`;
-                    actionBtns += `<button onclick="archiveTask('${task.taskId}', '${task.company}')" class="action-btn btn-archive" title="Lưu trữ">Lưu 📥</button>`;
+                    actionBtns += `<button class="action-menu-item add" onclick="openModal('${task.taskId}')" title="Thêm Sub-task">
+                                    <span class="action-menu-icon">➕</span>
+                                    <span>Thêm Sub</span>
+                                  </button>`;
+                    actionBtns += `<button class="action-menu-item archive" onclick="archiveTask('${task.taskId}', '${task.company}')" title="Lưu trữ">
+                                    <span class="action-menu-icon">📥</span>
+                                    <span>Lưu trữ</span>
+                                  </button>`;
                 }
-                if(isMain && isDoneTab) { actionBtns += `<span class="text-[#34c759] font-bold text-[11px]">Đã Lưu</span>`; }
+                if(isMain && isDoneTab) { 
+                    actionBtns += `<div class="action-menu-item archived">
+                                    <span class="action-menu-icon">✅</span>
+                                    <span>Đã Lưu</span>
+                                  </div>`; 
+                }
+                
+                actionBtns += `</div></div>`;
 
                 let rowHtml = `<tr class="hover:bg-[#f9f9f9] transition-colors">`;
-                if(showCompCol) rowHtml += `<td class="sticky-col bg-white text-center font-bold text-[#86868b]">${task.company}</td>`;
+                if(showCompCol) rowHtml += `<td class="sticky-col bg-white text-center font-bold text-[#64748b]">${task.company}</td>`;
                 
                 rowHtml += `
                     <td class="text-center">${badge}</td>
-                    <td class="task-name-col ${indent}">${isMain ? '' : '<span class="text-[#d2d2d7] mr-1">↳</span>'}${task.name}</td>
+                    <td class="task-name-col ${indent}">${isMain ? '' : '<span class="text-[#cbd5e1] mr-1">↳</span>'}${task.name}</td>
                     <td class="text-center text-[#475569] font-medium">${sShow}</td>
                     <td class="text-center text-[#475569] font-medium">${dShow}</td>
-                    <td class="text-center font-bold text-[#86868b]">${daysCount}</td>
+                    <td class="text-center font-bold text-[#64748b]">${daysCount}</td>
                     <td class="text-center">${stPill}</td>
-                    <td class="text-center font-bold text-[#1d1d1f]">${task.progressSub}%</td>
+                    <td class="text-center font-bold text-[#1e293b]">${task.progressSub}%</td>
                     <td class="text-center whitespace-nowrap">${actionBtns}</td>`;
 
                 // VẼ Ô GANTT
@@ -578,6 +949,7 @@
                 let toArchive = window.allTasks.filter(t => t.company === comp && (t.taskId === taskId || t.taskId.startsWith(taskId + '.')));
                 toArchive.forEach(t => { update(ref(db, 'tasks/' + t.dbKey), { archived: true }); });
             }
+            window.closeAllMenus();
         }
 
         function getNextTaskId(company, parentId = null) {
@@ -603,6 +975,7 @@
             document.getElementById('statusControlBox').classList.remove('hidden');
             document.getElementById('mainTaskWarning').classList.add('hidden');
             document.getElementById('taskModal').classList.remove('hidden');
+            window.closeAllMenus();
         };
 
         window.editTask = function(dbKey) {
@@ -624,6 +997,7 @@
                 document.getElementById('mainTaskWarning').classList.remove('flex');
             }
             document.getElementById('taskModal').classList.remove('hidden');
+            window.closeAllMenus();
         };
 
         window.closeModal = function() { document.getElementById('taskModal').classList.add('hidden'); };
@@ -642,10 +1016,45 @@
             closeModal();
         };
 
+        // ACTION MENU FUNCTIONS
+        window.closeAllMenus = function() {
+            document.querySelectorAll('.action-menu').forEach(menu => {
+                menu.classList.remove('show');
+                if (menu.previousElementSibling) {
+                    menu.previousElementSibling.classList.remove('active');
+                }
+            });
+        };
+        
+        window.toggleActionMenu = function(menuId) {
+            const menu = document.getElementById(menuId);
+            const trigger = menu.previousElementSibling;
+            
+            // Close all other menus
+            document.querySelectorAll('.action-menu').forEach(m => {
+                if (m.id !== menuId) {
+                    m.classList.remove('show');
+                    m.previousElementSibling.classList.remove('active');
+                }
+            });
+            
+            // Toggle current menu
+            menu.classList.toggle('show');
+            trigger.classList.toggle('active');
+        };
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.action-menu-wrapper')) {
+                window.closeAllMenus();
+            }
+        });
+        
         window.deleteTask = function(dbKey, taskId) {
             let isMain = !taskId.includes('.');
             let msg = isMain ? `CẢNH BÁO: Xóa Main Task ${taskId} sẽ KHÔNG xóa Sub-task. Bạn phải xóa Sub-task trước. Xóa ngay?` : `Xác nhận xóa Sub-task ${taskId}?`;
             if (confirm(msg)) { remove(ref(db, 'tasks/' + dbKey)); }
+            window.closeAllMenus();
         };
     </script>
 </body>
