@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Work Plan - Realtime Gantt</title>
+    <title>Master Work Plan - Realtime</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; }
@@ -14,75 +14,121 @@
         .bg-weekend-head { background-color: #0070c0 !important; } 
         .bg-weekend-body { background-color: #f2f2f2; } 
         
-        .status-complete { background-color: #c6efce; color: #006100; font-style: italic; }
-        .status-inprogress { background-color: #ffff99; color: #9c6500; font-style: italic; }
-        .status-pending { background-color: #ffc7ce; color: #9c0006; font-style: italic; }
+        .status-complete { background-color: #c6efce; color: #006100; font-weight: 500; }
+        .status-inprogress { background-color: #ffff99; color: #9c6500; font-weight: 500; }
+        .status-notstart { background-color: #f2f2f2; color: #555; font-weight: 500; }
+        .status-pending { background-color: #ffc7ce; color: #9c0006; font-weight: 500; }
         
-        .table-container { overflow-x: auto; max-width: 100vw; border: 1px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px;}
+        .table-container { overflow-x: auto; max-width: 100%; border: 1px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px;}
         .sticky-col { position: sticky; left: 0; background-color: white; z-index: 10; border-right: 2px solid #8ea9db;}
         th.sticky-col { background-color: #1f4e78; z-index: 11; }
         
         input, select { border: 1px solid #ccc; padding: 6px; border-radius: 4px; font-size: 13px;}
+        .tab-btn { padding: 10px 20px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; color: #555; transition: all 0.3s;}
+        .tab-btn.active { border-bottom: 3px solid #1f4e78; color: #1f4e78; background-color: #eef2f5;}
+        .tab-btn:hover { background-color: #f8f9fa; }
     </style>
 </head>
-<body class="bg-gray-50 p-4">
+<body class="bg-gray-100 p-4 min-h-screen">
 
-    <div class="max-w-full mx-auto bg-white p-4 rounded">
-        <h1 class="text-xl font-bold text-blue-800 mb-4 uppercase">DAILY WORK PLAN - GANTT CHART (AUTO-GENERATED REALTIME)</h1>
+    <div class="max-w-[98%] mx-auto bg-white p-4 rounded shadow-lg border-t-4 border-blue-800">
+        <h1 class="text-2xl font-bold text-blue-900 mb-4 uppercase tracking-wider">MASTER WORK PLAN - REALTIME DATABASE</h1>
         
-        <!-- Bảng điều khiển nhập liệu -->
-        <div class="flex gap-2 flex-wrap items-end bg-blue-50 p-4 rounded border border-blue-200">
-            <div>
-                <label class="block text-xs font-bold text-gray-600">Company</label>
-                <input type="text" id="f_company" placeholder="VD: SVL" class="w-20">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-600">Task #</label>
-                <input type="text" id="f_taskId" placeholder="1, 1.1..." class="w-16">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-600">Task Name</label>
-                <input type="text" id="f_name" placeholder="Tên công việc" class="w-48">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-600">Start Date</label>
-                <input type="date" id="f_start" class="w-32">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-600">Due Date</label>
-                <input type="date" id="f_due" class="w-32">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-600">Status</label>
-                <select id="f_status" class="w-28">
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Complete">Complete</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-600">Prog % (Sub)</label>
-                <input type="number" id="f_prog" placeholder="%" class="w-20" min="0" max="100">
-            </div>
-            <button id="btnAddTask" class="bg-blue-600 text-white font-bold px-6 py-2 rounded hover:bg-blue-700 h-[34px] transition-colors">TẠO TASK</button>
-            <button id="btnCancelEdit" class="hidden bg-gray-500 text-white font-bold px-4 py-2 rounded hover:bg-gray-600 h-[34px] transition-colors">HỦY</button>
+        <!-- TABS NAV -->
+        <div class="flex space-x-1 border-b border-gray-300 mb-4">
+            <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">🏢 CÔNG TY SVL</div>
+            <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">🏢 CÔNG TY SGV</div>
+            <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">🏢 CÔNG TY SVN</div>
+            <div id="tab-DASHBOARD" class="tab-btn text-red-700" onclick="switchTab('DASHBOARD')">📊 BÁO CÁO & GANTT</div>
         </div>
 
-        <!-- Khung chứa bảng Excel -->
-        <div class="table-container">
-            <table id="ganttTable">
-                <thead id="ganttHead"></thead>
-                <tbody id="ganttBody"></tbody>
-            </table>
+        <!-- VIEWS: COMPANY -->
+        <div id="view-company" class="block">
+            <div class="flex justify-between items-center bg-blue-50 p-4 rounded border border-blue-200 mb-4">
+                <h2 id="companyTitle" class="text-lg font-bold text-blue-800">Danh sách công việc SVL</h2>
+                <button onclick="openModal(null)" class="bg-blue-600 text-white font-bold px-6 py-2 rounded shadow hover:bg-blue-700 transition-colors">+ THÊM CÔNG VIỆC CHÍNH</button>
+            </div>
+            <div class="table-container">
+                <table id="compTable">
+                    <thead>
+                        <tr>
+                            <th class="w-16">Task #</th>
+                            <th style="min-width: 300px;">Task Name</th>
+                            <th class="w-24">Start Date</th>
+                            <th class="w-24">Due Date</th>
+                            <th class="w-16">Days</th>
+                            <th class="w-28">Status</th>
+                            <th class="w-20">Prog %</th>
+                            <th class="w-48">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="compBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- VIEWS: DASHBOARD -->
+        <div id="view-dashboard" class="hidden">
+            <div class="flex gap-4 flex-wrap items-end bg-red-50 p-4 rounded border border-red-200 mb-4">
+                <div><label class="block text-xs font-bold text-gray-600">Từ ngày</label><input type="date" id="filterStart"></div>
+                <div><label class="block text-xs font-bold text-gray-600">Đến ngày</label><input type="date" id="filterEnd"></div>
+                <div><label class="block text-xs font-bold text-gray-600">Trạng thái</label>
+                    <select id="filterStatus">
+                        <option value="ALL">Tất cả</option>
+                        <option value="Complete">Hoàn thành</option>
+                        <option value="Incomplete">Chưa hoàn thành</option>
+                    </select>
+                </div>
+                <button onclick="renderDashboard()" class="bg-red-600 text-white font-bold px-6 py-2 rounded shadow hover:bg-red-700">LỌC DỮ LIỆU</button>
+            </div>
+            <div class="table-container">
+                <table id="ganttTable">
+                    <thead id="ganttHead"></thead>
+                    <tbody id="ganttBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Script kết nối Firebase & Xử lý thuật toán Gantt -->
+    <!-- MODAL THÊM/SỬA TASK -->
+    <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-[500px]">
+            <h3 id="modalTitle" class="text-xl font-bold text-blue-800 mb-4 border-b pb-2">Thêm Công Việc</h3>
+            <div class="space-y-3">
+                <div><label class="block text-sm font-bold text-gray-700">Tên công việc <span class="text-red-500">*</span></label>
+                    <input type="text" id="m_name" class="w-full"></div>
+                <div class="flex gap-4">
+                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700">Start Date <span class="text-red-500">*</span></label>
+                        <input type="date" id="m_start" class="w-full"></div>
+                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700">Due Date <span class="text-red-500">*</span></label>
+                        <input type="date" id="m_due" class="w-full"></div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700">Trạng thái</label>
+                        <select id="m_status" class="w-full" onchange="autoFillProgress()">
+                            <option value="Not Start">Not Start</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Complete">Complete</option>
+                            <option value="Pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700">Tiến độ (%)</label>
+                        <input type="number" id="m_prog" class="w-full" min="0" max="100" value="0"></div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded font-bold hover:bg-gray-400">HỦY</button>
+                <button onclick="saveTask()" class="px-4 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700">LƯU LẠI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        // Cấu hình Firebase
+        // CẤU HÌNH FIREBASE - GIỮ NGUYÊN
         const firebaseConfig = {
             apiKey: "AIzaSyA8XGvUoCBWs8WUlwC2hUEHPF6RQl6eSM0",
             authDomain: "dailyworkplan-de669.firebaseapp.com",
@@ -90,228 +136,281 @@
             projectId: "dailyworkplan-de669",
             storageBucket: "dailyworkplan-de669.firebasestorage.app",
             messagingSenderId: "703304226095",
-            appId: "1:703304226095:web:4b75c9cb7d2f9f32f57dda",
-            measurementId: "G-447Z32NZZX"
+            appId: "1:703304226095:web:4b75c9cb7d2f9f32f57dda"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const tasksRef = ref(db, 'tasks');
 
-        // Biến toàn cục để lưu dữ liệu và kiểm tra trạng thái Sửa
+        // BIẾN TOÀN CỤC
         window.allTasks = [];
-        window.currentEditKey = null;
+        window.currentTab = 'SVL';
+        window.modalState = { mode: '', parentId: null, dbKey: null };
 
+        // LẮNG NGHE DỮ LIỆU
         onValue(tasksRef, (snapshot) => {
             window.allTasks = [];
-            snapshot.forEach((child) => {
-                window.allTasks.push({ dbKey: child.key, ...child.val() });
+            snapshot.forEach((child) => { window.allTasks.push({ dbKey: child.key, ...child.val() }); });
+            // Sort by Task ID automatically
+            window.allTasks.sort((a, b) => {
+                let aParts = a.taskId.split('.').map(Number);
+                let bParts = b.taskId.split('.').map(Number);
+                for(let i=0; i < Math.max(aParts.length, bParts.length); i++) {
+                    let av = aParts[i] || 0; let bv = bParts[i] || 0;
+                    if(av !== bv) return av - bv;
+                }
+                return 0;
             });
-            renderGanttChart(window.allTasks);
+            refreshViews();
         });
 
-        function parseDate(dateStr) { return dateStr ? new Date(dateStr) : null; }
-        function formatDateShow(dateObj) {
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            return dateObj.getDate() + "-" + months[dateObj.getMonth()];
-        }
-        function formatDayName(dateObj) {
-            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-            return days[dateObj.getDay()];
-        }
-        function isWeekend(dateObj) { return dateObj.getDay() === 0 || dateObj.getDay() === 6; }
+        // ĐỔI TAB
+        window.switchTab = function(tabName) {
+            window.currentTab = tabName;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            if(tabName === 'DASHBOARD') {
+                document.getElementById('view-company').classList.add('hidden');
+                document.getElementById('view-dashboard').classList.remove('hidden');
+            } else {
+                document.getElementById('view-company').classList.remove('hidden');
+                document.getElementById('view-dashboard').classList.add('hidden');
+                document.getElementById('companyTitle').innerText = `Danh sách công việc ${tabName}`;
+            }
+            refreshViews();
+        };
 
-        function renderGanttChart(tasks) {
+        function refreshViews() {
+            if(window.currentTab === 'DASHBOARD') renderDashboard();
+            else renderCompanyTable();
+        }
+
+        // AUTO FILL % DỰA VÀO STATUS
+        window.autoFillProgress = function() {
+            let st = document.getElementById('m_status').value;
+            let pr = document.getElementById('m_prog');
+            if(st === 'Not Start') pr.value = 0;
+            if(st === 'Complete') pr.value = 100;
+        }
+
+        // TÍNH TOÁN DATA (MAIN TỪ SUB)
+        function getProcessedTasks(filterComp = null) {
+            let processed = JSON.parse(JSON.stringify(window.allTasks)); // clone
+            if(filterComp) processed = processed.filter(t => t.company === filterComp);
+            
+            processed.forEach(task => {
+                if(!task.taskId.includes('.')) {
+                    let subs = processed.filter(t => t.taskId.startsWith(task.taskId + '.'));
+                    if(subs.length > 0) {
+                        let sum = 0;
+                        subs.forEach(s => sum += parseInt(s.progressSub || 0));
+                        let avg = Math.round(sum / subs.length);
+                        task.progressSub = avg;
+                        if(avg === 0) task.status = 'Not Start';
+                        else if(avg === 100) task.status = 'Complete';
+                        else task.status = 'In Progress';
+                    }
+                }
+            });
+            return processed;
+        }
+
+        // VẼ BẢNG CÔNG TY
+        function renderCompanyTable() {
+            let tasks = getProcessedTasks(window.currentTab);
+            let tbody = document.getElementById('compBody');
+            tbody.innerHTML = '';
+            
+            if(tasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4">Chưa có công việc nào.</td></tr>';
+                return;
+            }
+
+            tasks.forEach(task => {
+                let isMain = !task.taskId.includes('.');
+                let sDate = task.startDate ? new Date(task.startDate) : null;
+                let dDate = task.dueDate ? new Date(task.dueDate) : null;
+                let days = (sDate && dDate) ? Math.round((dDate - sDate) / 86400000) + 1 : '';
+                let sShow = sDate ? ("0"+sDate.getDate()).slice(-2)+"/"+("0"+(sDate.getMonth()+1)).slice(-2)+"/"+sDate.getFullYear() : '';
+                let dShow = dDate ? ("0"+dDate.getDate()).slice(-2)+"/"+("0"+(dDate.getMonth()+1)).slice(-2)+"/"+dDate.getFullYear() : '';
+                
+                let stClass = task.status === 'Complete' ? 'status-complete' : task.status === 'Not Start' ? 'status-notstart' : task.status === 'Pending' ? 'status-pending' : 'status-inprogress';
+                let indent = isMain ? 'font-bold' : 'pl-8 text-gray-700';
+                
+                let actionBtns = `<button onclick="editTask('${task.dbKey}')" class="text-blue-600 hover:underline mr-3 font-semibold">Sửa</button>
+                                  <button onclick="deleteTask('${task.dbKey}', '${task.taskId}')" class="text-red-500 hover:underline mr-3 font-semibold">Xóa</button>`;
+                if(isMain) {
+                    actionBtns += `<button onclick="openModal('${task.taskId}')" class="text-green-600 hover:underline font-semibold">+ Thêm Sub</button>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 border-b border-gray-200">
+                        <td class="text-center font-semibold">${task.taskId}</td>
+                        <td class="${indent}">${isMain ? '' : '↳ '}${task.name}</td>
+                        <td class="text-center">${sShow}</td>
+                        <td class="text-center">${dShow}</td>
+                        <td class="text-center">${days}</td>
+                        <td class="text-center ${stClass}">${task.status}</td>
+                        <td class="text-center font-bold ${stClass}">${task.progressSub || 0}%</td>
+                        <td class="">${actionBtns}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // VẼ DASHBOARD (GANTT)
+        window.renderDashboard = function() {
+            let fStart = document.getElementById('filterStart').value;
+            let fEnd = document.getElementById('filterEnd').value;
+            let fStatus = document.getElementById('filterStatus').value;
+            
+            let tasks = getProcessedTasks(null); // Lấy tất cả công ty
+            
+            // Apply Status Filter
+            if(fStatus === 'Complete') tasks = tasks.filter(t => t.progressSub == 100);
+            if(fStatus === 'Incomplete') tasks = tasks.filter(t => t.progressSub < 100);
+
             const thead = document.getElementById('ganttHead');
             const tbody = document.getElementById('ganttBody');
             thead.innerHTML = ''; tbody.innerHTML = '';
+            if(tasks.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4">Không có dữ liệu.</td></tr>'; return; }
 
-            if (tasks.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4">Chưa có dữ liệu công việc.</td></tr>';
-                return;
-            }
-
-            let minDate = new Date("2099-12-31");
-            let maxDate = new Date("1900-01-01");
+            let minDate = fStart ? new Date(fStart) : new Date("2099-12-31");
+            let maxDate = fEnd ? new Date(fEnd) : new Date("1900-01-01");
             
-            tasks.forEach(t => {
-                let s = parseDate(t.startDate);
-                let d = parseDate(t.dueDate);
-                if (s && !isNaN(s) && s < minDate) minDate = s;
-                if (d && !isNaN(d) && d > maxDate) maxDate = d;
-            });
-
-            if (minDate > maxDate) { minDate = new Date(); maxDate = new Date(); }
+            if(!fStart || !fEnd) {
+                tasks.forEach(t => {
+                    let s = t.startDate ? new Date(t.startDate) : null;
+                    let d = t.dueDate ? new Date(t.dueDate) : null;
+                    if(!fStart && s && s < minDate) minDate = s;
+                    if(!fEnd && d && d > maxDate) maxDate = d;
+                });
+            }
+            if(minDate > maxDate) { minDate = new Date(); maxDate = new Date(); }
 
             let dateRange = [];
             let curr = new Date(minDate);
-            while (curr <= maxDate) {
-                dateRange.push(new Date(curr));
-                curr.setDate(curr.getDate() + 1);
-            }
+            while(curr <= maxDate) { dateRange.push(new Date(curr)); curr.setDate(curr.getDate() + 1); }
 
-            let trDay = `<tr>
-                <th rowspan="2" class="sticky-col">Company</th>
-                <th rowspan="2">Task #</th>
-                <th rowspan="2" style="min-width: 200px;">Task Name</th>
-                <th rowspan="2">Start Date</th>
-                <th rowspan="2">Due Date</th>
-                <th rowspan="2">Days</th>
-                <th rowspan="2">Status</th>
-                <th rowspan="2">Progress %<br>(Main)</th>
-                <th rowspan="2">Progress %<br>(Sub)</th>
-                <th rowspan="2" style="min-width: 90px;">Hành động</th>`;
-            
+            let trDay = `<tr><th rowspan="2" class="sticky-col">Company</th><th rowspan="2">Task #</th><th rowspan="2" style="min-width: 250px;">Task Name</th><th rowspan="2">Status</th><th rowspan="2">Prog %</th>`;
             let trDate = `<tr>`;
             dateRange.forEach(d => {
-                let headClass = isWeekend(d) ? "bg-weekend-head" : "";
-                trDay += `<th class="${headClass}">${formatDayName(d)}</th>`;
-                trDate += `<th class="${headClass}">${formatDateShow(d)}</th>`;
+                let isW = (d.getDay()===0 || d.getDay()===6) ? "bg-weekend-head" : "";
+                trDay += `<th class="${isW}">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]}</th>`;
+                trDate += `<th class="${isW}">${d.getDate() + "/" + (d.getMonth()+1)}</th>`;
             });
-            trDay += `</tr>`; trDate += `</tr>`;
-            thead.innerHTML = trDay + trDate;
+            thead.innerHTML = trDay + "</tr>" + trDate + "</tr>";
 
             tasks.forEach(task => {
-                let mainProgress = "";
-                let taskComp = task.company || '';
-                let tId = task.taskId || '';
-                let tName = task.name || '';
-                let pSub = (task.progressSub !== undefined && task.progressSub !== '') ? task.progressSub : '';
-
-                if (tId && !tId.includes('.')) {
-                    let subTasks = tasks.filter(t => t.taskId && t.taskId.startsWith(tId + '.'));
-                    if (subTasks.length > 0) {
-                        let sum = 0; let count = 0;
-                        subTasks.forEach(st => {
-                            if (st.progressSub !== undefined && st.progressSub !== "") { sum += parseFloat(st.progressSub); count++; }
-                        });
-                        if (count > 0) mainProgress = Math.round(sum / count);
-                    } else {
-                        mainProgress = pSub;
-                    }
-                }
-
-                let sDate = parseDate(task.startDate);
-                let dDate = parseDate(task.dueDate);
-                let isValidDates = (sDate && !isNaN(sDate) && dDate && !isNaN(dDate));
+                let sDate = task.startDate ? new Date(task.startDate) : null;
+                let dDate = task.dueDate ? new Date(task.dueDate) : null;
+                let stClass = task.status === 'Complete' ? 'status-complete' : task.status === 'Not Start' ? 'status-notstart' : task.status === 'Pending' ? 'status-pending' : 'status-inprogress';
+                let isMain = !task.taskId.includes('.');
                 
-                let daysCount = isValidDates ? Math.round((dDate - sDate) / (1000 * 60 * 60 * 24)) + 1 : '';
-                let sShow = isValidDates ? ("0" + sDate.getDate()).slice(-2) + "/" + ("0" + (sDate.getMonth() + 1)).slice(-2) + "/" + sDate.getFullYear() : '';
-                let dShow = isValidDates ? ("0" + dDate.getDate()).slice(-2) + "/" + ("0" + (dDate.getMonth() + 1)).slice(-2) + "/" + dDate.getFullYear() : '';
-
-                let statusClass = task.status === 'Complete' ? 'status-complete' : 
-                                  task.status === 'In Progress' ? 'status-inprogress' : 'status-pending';
-
-                let nameIndent = tId && tId.includes('.') ? '&rarr; ' : '';
-
                 let rowHtml = `<tr>
-                    <td class="sticky-col bg-white">${taskComp}</td>
-                    <td class="text-center">${tId}</td>
-                    <td>${nameIndent}${tName}</td>
-                    <td class="text-center">${sShow}</td>
-                    <td class="text-center">${dShow}</td>
-                    <td class="text-center">${daysCount > 0 ? daysCount : ''}</td>
-                    <td class="text-center ${statusClass}">${task.status || 'Pending'}</td>
-                    <td class="text-center ${mainProgress !== "" ? statusClass : ''}">${mainProgress}</td>
-                    <td class="text-center ${pSub !== "" ? statusClass : ''}">${pSub}</td>
-                    <td class="text-center">
-                        <button onclick="editTask('${task.dbKey}')" class="text-blue-600 font-bold hover:underline mr-2">Sửa</button>
-                        <button onclick="deleteTask('${task.dbKey}')" class="text-red-500 font-bold hover:underline">Xóa</button>
-                    </td>`;
+                    <td class="sticky-col bg-white text-center font-bold text-blue-800">${task.company}</td>
+                    <td class="text-center">${task.taskId}</td>
+                    <td class="${isMain ? 'font-bold' : 'pl-6'}">${isMain ? '' : '↳ '}${task.name}</td>
+                    <td class="text-center ${stClass}">${task.status}</td>
+                    <td class="text-center font-bold ${stClass}">${task.progressSub || 0}%</td>`;
 
                 dateRange.forEach(d => {
-                    let isTaskDay = isValidDates && (d >= sDate && d <= dDate);
-                    let cellClass = isTaskDay ? statusClass : (isWeekend(d) ? "bg-weekend-body" : "");
+                    let isTaskDay = (sDate && dDate && d >= sDate && d <= dDate);
+                    let cellClass = isTaskDay ? stClass : ((d.getDay()===0 || d.getDay()===6) ? "bg-weekend-body" : "");
                     rowHtml += `<td class="${cellClass}"></td>`;
                 });
-
-                rowHtml += `</tr>`;
-                tbody.innerHTML += rowHtml;
+                tbody.innerHTML += rowHtml + `</tr>`;
             });
         }
 
-        // --- XỬ LÝ SỰ KIỆN NÚT BẤM CHÍNH ---
-        document.getElementById('btnAddTask').addEventListener('click', () => {
-            const nName = document.getElementById('f_name').value;
-            const nStart = document.getElementById('f_start').value;
-            const nDue = document.getElementById('f_due').value;
-
-            if (!nName) {
-                alert('Vui lòng nhập Tên công việc!');
-                return;
+        // LOGIC TẠO TASK # TỰ ĐỘNG
+        function getNextTaskId(company, parentId = null) {
+            let compTasks = window.allTasks.filter(t => t.company === company);
+            if(!parentId) { // Main task
+                let mains = compTasks.filter(t => !t.taskId.includes('.'));
+                if(mains.length === 0) return "1";
+                let max = Math.max(...mains.map(t => parseInt(t.taskId)));
+                return (max + 1).toString();
+            } else { // Sub task
+                let subs = compTasks.filter(t => t.taskId.startsWith(parentId + '.'));
+                if(subs.length === 0) return parentId + ".1";
+                let max = Math.max(...subs.map(t => parseInt(t.taskId.split('.')[1])));
+                return parentId + "." + (max + 1).toString();
             }
-
-            let taskData = {
-                company: document.getElementById('f_company').value,
-                taskId: document.getElementById('f_taskId').value,
-                name: nName,
-                startDate: nStart,
-                dueDate: nDue,
-                status: document.getElementById('f_status').value,
-                progressSub: document.getElementById('f_prog').value
-            };
-
-            if (window.currentEditKey) {
-                // Đang ở chế độ Sửa -> Cập nhật dữ liệu
-                update(ref(db, 'tasks/' + window.currentEditKey), taskData);
-            } else {
-                // Chế độ Bình thường -> Tạo mới
-                push(tasksRef, taskData);
-            }
-            resetForm();
-        });
-
-        document.getElementById('btnCancelEdit').addEventListener('click', () => {
-            resetForm();
-        });
-
-        // --- CÁC HÀM GẮN VÀO WINDOW ---
-        window.editTask = function(dbKey) {
-            const task = window.allTasks.find(t => t.dbKey === dbKey);
-            if(task) {
-                document.getElementById('f_company').value = task.company || '';
-                document.getElementById('f_taskId').value = task.taskId || '';
-                document.getElementById('f_name').value = task.name || '';
-                document.getElementById('f_start').value = task.startDate || '';
-                document.getElementById('f_due').value = task.dueDate || '';
-                document.getElementById('f_status').value = task.status || 'Pending';
-                document.getElementById('f_prog').value = task.progressSub !== undefined ? task.progressSub : '';
-
-                window.currentEditKey = dbKey;
-                
-                // Đổi giao diện nút bấm
-                const btn = document.getElementById('btnAddTask');
-                btn.innerText = 'CẬP NHẬT';
-                btn.classList.replace('bg-blue-600', 'bg-green-600');
-                btn.classList.replace('hover:bg-blue-700', 'hover:bg-green-700');
-                document.getElementById('btnCancelEdit').classList.remove('hidden');
-            }
-        };
-
-        window.deleteTask = function(dbKey) {
-            if (confirm('Bạn có chắc chắn muốn xóa dòng công việc này?')) {
-                remove(ref(db, 'tasks/' + dbKey));
-            }
-        };
-
-        function resetForm() {
-            document.getElementById('f_company').value = '';
-            document.getElementById('f_taskId').value = '';
-            document.getElementById('f_name').value = '';
-            document.getElementById('f_start').value = '';
-            document.getElementById('f_due').value = '';
-            document.getElementById('f_status').value = 'Pending';
-            document.getElementById('f_prog').value = '';
-
-            window.currentEditKey = null;
-            
-            // Trả giao diện nút về mặc định
-            const btn = document.getElementById('btnAddTask');
-            btn.innerText = 'TẠO TASK';
-            btn.classList.replace('bg-green-600', 'bg-blue-600');
-            btn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700');
-            document.getElementById('btnCancelEdit').classList.add('hidden');
         }
+
+        // MODAL HANDLERS
+        window.openModal = function(parentId = null) {
+            window.modalState = { mode: 'ADD', parentId: parentId, dbKey: null };
+            document.getElementById('modalTitle').innerText = parentId ? `Thêm Công Việc Con cho Task ${parentId}` : `Thêm Công Việc Chính`;
+            document.getElementById('m_name').value = '';
+            document.getElementById('m_start').value = '';
+            document.getElementById('m_due').value = '';
+            document.getElementById('m_status').value = 'Not Start';
+            document.getElementById('m_prog').value = '0';
+            
+            // Disable Progress input for Main Tasks since it's auto-calculated
+            document.getElementById('m_prog').disabled = !parentId ? true : false;
+            if(!parentId) document.getElementById('m_prog').title = "Tỷ lệ Main Task được tính tự động từ Sub Task";
+
+            document.getElementById('taskModal').classList.remove('hidden');
+        };
+
+        window.editTask = function(dbKey) {
+            let task = window.allTasks.find(t => t.dbKey === dbKey);
+            if(!task) return;
+            window.modalState = { mode: 'EDIT', parentId: null, dbKey: dbKey };
+            document.getElementById('modalTitle').innerText = `Sửa Công Việc: ${task.taskId}`;
+            document.getElementById('m_name').value = task.name;
+            document.getElementById('m_start').value = task.startDate;
+            document.getElementById('m_due').value = task.dueDate;
+            document.getElementById('m_status').value = task.status;
+            document.getElementById('m_prog').value = task.progressSub || 0;
+            
+            let isMain = !task.taskId.includes('.');
+            document.getElementById('m_prog').disabled = isMain ? true : false;
+            
+            document.getElementById('taskModal').classList.remove('hidden');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('taskModal').classList.add('hidden');
+        };
+
+        window.saveTask = function() {
+            let nName = document.getElementById('m_name').value;
+            let nStart = document.getElementById('m_start').value;
+            let nDue = document.getElementById('m_due').value;
+            let nStatus = document.getElementById('m_status').value;
+            let nProg = document.getElementById('m_prog').value;
+
+            if(!nName || !nStart || !nDue) return alert('Vui lòng nhập đủ Tên và Ngày tháng!');
+
+            if(window.modalState.mode === 'ADD') {
+                let newId = getNextTaskId(window.currentTab, window.modalState.parentId);
+                push(tasksRef, {
+                    company: window.currentTab,
+                    taskId: newId,
+                    name: nName,
+                    startDate: nStart,
+                    dueDate: nDue,
+                    status: nStatus,
+                    progressSub: nProg
+                });
+            } else if (window.modalState.mode === 'EDIT') {
+                update(ref(db, 'tasks/' + window.modalState.dbKey), {
+                    name: nName, startDate: nStart, dueDate: nDue, status: nStatus, progressSub: nProg
+                });
+            }
+            closeModal();
+        };
+
+        window.deleteTask = function(dbKey, taskId) {
+            let isMain = !taskId.includes('.');
+            let msg = isMain ? `CẢNH BÁO: Xóa Main Task ${taskId} sẽ KHÔNG tự động xóa Sub-task. Bạn có chắc chắn xóa?` : `Bạn có chắc muốn xóa Sub-task ${taskId}?`;
+            if (confirm(msg)) { remove(ref(db, 'tasks/' + dbKey)); }
+        };
     </script>
 </body>
 </html>
