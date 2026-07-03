@@ -1,12 +1,9 @@
 const CACHE_NAME = 'master-work-plan-v1';
 const RUNTIME_CACHE = 'master-work-plan-runtime';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js',
-  'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
+  './',
+  './index.html',
+  './manifest.json'
 ];
 
 // Install event - cache essential assets
@@ -15,13 +12,11 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME).then(cache => {
       console.log('Service Worker: Caching assets');
       // Cache critical assets, but don't fail if some are unavailable
-      return Promise.all(
-        ASSETS_TO_CACHE.map(url => {
-          return cache.add(url).catch(err => {
-            console.log('Could not cache:', url);
-          });
-        })
-      );
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map(url => cache.add(url))
+      ).then(() => {
+        console.log('Service Worker: Cache complete');
+      });
     }).then(() => self.skipWaiting())
   );
 });
@@ -47,27 +42,8 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip Firebase and external API calls for now
-  if (url.hostname.includes('firebase') || url.hostname.includes('gstatic')) {
-    return event.respondWith(
-      fetch(request)
-        .then(response => {
-          // Cache successful responses
-          if (response.status === 200) {
-            const cache = caches.open(RUNTIME_CACHE);
-            cache.then(c => c.put(request, response.clone()));
-          }
-          return response;
-        })
-        .catch(() => {
-          // Try cache if offline
-          return caches.match(request);
-        })
-    );
-  }
-
   // For HTML requests
-  if (request.method === 'GET' && request.headers.get('accept').includes('text/html')) {
+  if (request.method === 'GET' && request.headers.get('accept')?.includes('text/html')) {
     return event.respondWith(
       fetch(request)
         .then(response => {
@@ -77,7 +53,7 @@ self.addEventListener('fetch', event => {
           }
           return response;
         })
-        .catch(() => caches.match(request) || caches.match('/'))
+        .catch(() => caches.match(request) || caches.match('./index.html'))
     );
   }
 
@@ -85,18 +61,33 @@ self.addEventListener('fetch', event => {
   if (request.method === 'GET') {
     return event.respondWith(
       caches.match(request)
-        .then(response => response || fetch(request))
+        .then(response => {
+          if (response) return response;
+          
+          // Try network and cache successful responses
+          return fetch(request)
+            .then(networkResponse => {
+              if (networkResponse && networkResponse.status === 200) {
+                const cache = caches.open(RUNTIME_CACHE);
+                cache.then(c => c.put(request, networkResponse.clone()));
+              }
+              return networkResponse;
+            });
+        })
         .catch(() => {
-          // Return offline page or cached content
+          // Offline fallback
           if (request.destination === 'image') {
             return new Response('', { status: 404 });
           }
+          return caches.match('./index.html');
         })
     );
   }
 
-  // For other requests, go straight to network
-  event.respondWith(fetch(request));
+  // For other requests (POST, etc), go straight to network
+  event.respondWith(fetch(request).catch(() => {
+    return new Response('Offline', { status: 503 });
+  }));
 });
 
 // Background sync for offline actions
