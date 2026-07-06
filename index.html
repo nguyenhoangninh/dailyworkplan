@@ -321,13 +321,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.08) 100%);
             border: 1px solid rgba(59, 130, 246, 0.2);
             cursor: pointer;
-            font-size: 18px;
+            font-size: 15px;
+            line-height: 1;
             color: #3b82f6;
             transition: all 0.2s;
         }
@@ -347,15 +348,30 @@
             position: absolute;
             top: 100%;
             right: 0;
-            margin-top: 8px;
+            margin-top: 6px;
             background: white;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.15);
             z-index: 1000;
-            min-width: 180px;
+            min-width: 150px;
             overflow: hidden;
             display: none;
+        }
+        
+        /* Menu opens upward for rows near the bottom */
+        .action-menu.open-up {
+            top: auto;
+            bottom: 100%;
+            margin-top: 0;
+            margin-bottom: 6px;
+        }
+        .action-menu.open-up.show {
+            animation: slideUp 0.2s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .action-menu.show {
@@ -377,8 +393,8 @@
         .action-menu-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
+            gap: 8px;
+            padding: 8px 12px;
             border: none;
             background: transparent;
             color: #1e293b;
@@ -410,6 +426,46 @@
             width: 16px;
             text-align: center;
         }
+        
+        /* Group toggle chevron for main tasks */
+        .group-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            margin-right: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 10px;
+            transition: all 0.15s;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .group-toggle:hover { background: #e2e8f0; color: #1e293b; }
+        .group-toggle .chev { transition: transform 0.2s; display: inline-block; }
+        .group-toggle.collapsed .chev { transform: rotate(-90deg); }
+        
+        /* Tab count badge */
+        .tab-count {
+            display: inline-block;
+            margin-left: 5px;
+            min-width: 16px;
+            padding: 0 5px;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 16px;
+            text-align: center;
+            border-radius: 8px;
+            background: #e2e8f0;
+            color: #64748b;
+            vertical-align: middle;
+        }
+        .tab-btn.active .tab-count { background: #dbeafe; color: #2563eb; }
+        #tab-PERSONAL.active .tab-count { background: #fce7f3; color: #db2777; }
+        #tab-PERSONAL.active { color: #db2777 !important; border-bottom-color: #db2777 !important; }
+        #tab-PERSONAL:hover:not(.active) { color: #ec4899; }
         
         /* Nút Hành động nhỏ trong bảng - Compact */
         .action-btn { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; transition: background 0.2s; cursor: pointer; white-space: nowrap; }
@@ -507,15 +563,17 @@
             
             <!-- TABS NAV (Segmented Control) -->
             <div class="tabs-container">
-                <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">SVL</div>
-                <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">SGV</div>
-                <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">SVN</div>
+                <div id="tab-SVL" class="tab-btn active" onclick="switchTab('SVL')">SVL<span class="tab-count" id="count-SVL">0</span></div>
+                <div id="tab-SGV" class="tab-btn" onclick="switchTab('SGV')">SGV<span class="tab-count" id="count-SGV">0</span></div>
+                <div id="tab-SVN" class="tab-btn" onclick="switchTab('SVN')">SVN<span class="tab-count" id="count-SVN">0</span></div>
+                <div id="tab-PERSONAL" class="tab-btn" onclick="switchTab('PERSONAL')">Cá nhân<span class="tab-count" id="count-PERSONAL">0</span></div>
                 <div id="tab-DASHBOARD" class="tab-btn text-[#7c3aed]" onclick="switchTab('DASHBOARD')">Báo cáo & Gantt</div>
                 <div id="tab-DONE" class="tab-btn text-[#10b981]" onclick="switchTab('DONE')">Đã lưu trữ</div>
             </div>
             
             <!-- ZOOM CONTROLS -->
             <div class="zoom-controls">
+                <button class="zoom-btn" id="expandAllBtn" onclick="toggleExpandAll()" title="Mở rộng / Thu gọn tất cả" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); box-shadow: 0 2px 6px rgba(139,92,246,0.3);">⊕ Mở rộng</button>
                 <span style="color: #64748b; font-size: 11px; font-weight: 600;">Zoom:</span>
                 <button class="zoom-btn" onclick="zoomOut()">−</button>
                 <span class="zoom-display" id="zoomLevel">100%</span>
@@ -533,6 +591,7 @@
                     <option value="SVL">SVL</option>
                     <option value="SGV">SGV</option>
                     <option value="SVN">SVN</option>
+                    <option value="PERSONAL">Cá nhân</option>
                 </select>
             </div>
             <div class="flex-1 min-w-[250px]">
@@ -652,6 +711,9 @@
         window.allTasks = [];
         window.currentTab = 'SVL';
         window.modalState = { mode: '', parentId: null, dbKey: null, isMain: false };
+        // Track which main-task groups are collapsed. Key = "TAB:mainId". Default: all collapsed.
+        window.collapsedGroups = {};
+        window.groupsInitialized = {};
 
         // ZOOM CONTROL FUNCTIONS
         let currentZoom = 100;
@@ -728,8 +790,23 @@
                 }
                 return 0;
             });
+            updateTabCounts();
             renderView();
         });
+
+        // Đếm số CÔNG VIỆC CHÍNH (chưa lưu trữ) cho mỗi công ty, hiển thị trên tab.
+        // CV đã lưu trữ (archived) tự động không được tính -> "reset" bộ đếm.
+        window.updateTabCounts = function() {
+            ['SVL','SGV','SVN','PERSONAL'].forEach(comp => {
+                let count = window.allTasks.filter(t =>
+                    t.company === comp &&
+                    !t.taskId.includes('.') &&
+                    t.archived !== true
+                ).length;
+                let el = document.getElementById('count-' + comp);
+                if(el) el.innerText = count;
+            });
+        };
 
         window.switchTab = function(tabName) {
             window.currentTab = tabName;
@@ -740,6 +817,12 @@
                 document.getElementById('dashboardFilters').classList.remove('hidden');
             } else {
                 document.getElementById('dashboardFilters').classList.add('hidden');
+            }
+            // Ẩn nút Mở rộng/Thu gọn ở tab Dashboard (không có nhóm)
+            let eb = document.getElementById('expandAllBtn');
+            if(eb) {
+                eb.style.display = (tabName === 'DASHBOARD') ? 'none' : '';
+                eb.innerHTML = '⊕ Mở rộng';
             }
             renderView();
         };
@@ -813,6 +896,18 @@
                 return; 
             }
 
+            // GROUP: lần đầu vào 1 tab -> mặc định thu gọn tất cả nhóm.
+            // Dashboard xem toàn cảnh nên luôn mở rộng (không thu gọn).
+            let enableGroup = !isDashboard;
+            if(enableGroup && !window.groupsInitialized[window.currentTab]) {
+                tasks.forEach(t => {
+                    if(!t.taskId.includes('.')) {
+                        window.collapsedGroups[window.currentTab + ':' + t.taskId] = true;
+                    }
+                });
+                window.groupsInitialized[window.currentTab] = true;
+            }
+
             let today = new Date();
             today.setHours(0,0,0,0);
 
@@ -852,7 +947,7 @@
                       <th rowspan="2" class="w-12">Ngày</th>
                       <th rowspan="2" class="w-28">Status</th>
                       <th rowspan="2" class="w-16">%</th>
-                      <th rowspan="2" class="w-48">Hành động</th>`;
+                      <th rowspan="2" class="w-16">Hành động</th>`;
                       
             let trDate = `<tr>`;
             dateRange.forEach(d => {
@@ -865,9 +960,23 @@
 
             let lastMainId = null;
             
+            // Đếm số sub-task cho mỗi main (để hiển thị trên nút thu gọn)
+            let subCounts = {};
+            tasks.forEach(t => {
+                if(t.taskId.includes('.')) {
+                    let mid = t.taskId.split('.')[0];
+                    subCounts[mid] = (subCounts[mid] || 0) + 1;
+                }
+            });
+            
             tasks.forEach(task => {
                 let currentMainId = task.taskId.split('.')[0];
                 let isMain = !task.taskId.includes('.');
+                let groupKey = window.currentTab + ':' + currentMainId;
+                let isCollapsed = enableGroup && window.collapsedGroups[groupKey] === true;
+                
+                // Nếu là sub-task và nhóm đang thu gọn -> bỏ qua, không render
+                if(!isMain && isCollapsed) { return; }
                 
                 // CHÈN KHOẢNG TRẮNG GIỮA CÁC MAIN TASK (Yêu cầu làm rõ phân cách)
                 if(isMain && lastMainId !== null && currentMainId !== lastMainId) {
@@ -893,6 +1002,15 @@
                     : `<span class="text-[#64748b] text-[12px] font-bold">${task.taskId}</span>`;
 
                 let indent = isMain ? 'font-bold text-[13px] text-[#1e293b]' : 'pl-8 text-[#475569]';
+                
+                // Nút thu gọn/mở rộng nhóm (chỉ main task có sub, và không ở dashboard)
+                let hasSubs = subCounts[currentMainId] > 0;
+                let groupToggle = '';
+                if(isMain && enableGroup && hasSubs) {
+                    let collapsedCls = isCollapsed ? 'collapsed' : '';
+                    let cnt = subCounts[currentMainId];
+                    groupToggle = `<span class="group-toggle ${collapsedCls}" onclick="toggleGroup('${currentMainId}')" title="${isCollapsed ? 'Mở rộng' : 'Thu gọn'} ${cnt} công việc con"><span class="chev">▼</span></span>`;
+                }
                 
                 // Khung Hành Động - Dropdown Menu
                 let actionMenuId = `menu-${task.dbKey}`;
@@ -936,7 +1054,7 @@
                 
                 rowHtml += `
                     <td class="text-center">${badge}</td>
-                    <td class="task-name-col ${indent}">${isMain ? '' : '<span class="text-[#cbd5e1] mr-1">↳</span>'}${task.name}</td>
+                    <td class="task-name-col ${indent}">${isMain ? groupToggle : '<span class="text-[#cbd5e1] mr-1">↳</span>'}${task.name}</td>
                     <td class="text-center text-[#475569] font-medium">${sShow}</td>
                     <td class="text-center text-[#475569] font-medium">${dShow}</td>
                     <td class="text-center font-bold text-[#64748b]">${daysCount}</td>
@@ -1063,13 +1181,60 @@
             document.querySelectorAll('.action-menu').forEach(m => {
                 if (m.id !== menuId) {
                     m.classList.remove('show');
+                    m.classList.remove('open-up');
                     m.previousElementSibling.classList.remove('active');
                 }
             });
             
+            const willOpen = !menu.classList.contains('show');
+            
+            // Nếu sắp mở: kiểm tra còn đủ chỗ bên dưới không, nếu không thì mở lên trên
+            if(willOpen) {
+                const rect = trigger.getBoundingClientRect();
+                const spaceBelow = window.innerHeight - rect.bottom;
+                // menu cao ~ số item * 40px; ước lượng 180px là đủ an toàn
+                const menuHeight = 190;
+                if(spaceBelow < menuHeight && rect.top > menuHeight) {
+                    menu.classList.add('open-up');
+                } else {
+                    menu.classList.remove('open-up');
+                }
+            }
+            
             // Toggle current menu
             menu.classList.toggle('show');
             trigger.classList.toggle('active');
+        };
+        
+        // GROUP: thu gọn / mở rộng nhóm công việc con
+        window.toggleGroup = function(mainId) {
+            let key = window.currentTab + ':' + mainId;
+            window.collapsedGroups[key] = !window.collapsedGroups[key];
+            renderView();
+        };
+        
+        // Mở rộng / thu gọn tất cả nhóm trong tab hiện tại
+        window.toggleAllGroups = function(collapse) {
+            let tasks = getProcessedTasks();
+            tasks.forEach(t => {
+                if(!t.taskId.includes('.')) {
+                    window.collapsedGroups[window.currentTab + ':' + t.taskId] = collapse;
+                }
+            });
+            renderView();
+        };
+        
+        // Nút Mở rộng/Thu gọn tất cả — tự đổi trạng thái
+        window.toggleExpandAll = function() {
+            // Kiểm tra: nếu còn ít nhất 1 nhóm đang thu gọn -> mở rộng hết; ngược lại thu gọn hết
+            let tasks = getProcessedTasks();
+            let anyCollapsed = tasks.some(t =>
+                !t.taskId.includes('.') &&
+                window.collapsedGroups[window.currentTab + ':' + t.taskId] === true
+            );
+            toggleAllGroups(!anyCollapsed);
+            let btn = document.getElementById('expandAllBtn');
+            if(btn) btn.innerHTML = anyCollapsed ? '⊖ Thu gọn' : '⊕ Mở rộng';
         };
         
         // ========================================
