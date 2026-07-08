@@ -852,6 +852,7 @@
                 if(!task.taskId.includes('.')) {
                     let subs = processed.filter(t => t.taskId.startsWith(task.taskId + '.'));
                     if(subs.length > 0) {
+                        // Có sub -> tính trung bình tự động
                         let sum = 0;
                         subs.forEach(s => sum += s.progressSub);
                         let avg = Math.round(sum / subs.length);
@@ -861,8 +862,8 @@
                         else if(avg === 100) task.status = 'Complete';
                         else task.status = 'In Progress';
                     } else {
-                        task.progressSub = 0;
-                        task.status = 'Not Start';
+                        // KHÔNG có sub -> Main Task đứng một mình, dùng trạng thái đã lưu của chính nó
+                        task.progressSub = STATUS_MAP[task.status] !== undefined ? STATUS_MAP[task.status] : 0;
                     }
                 }
             });
@@ -1129,19 +1130,34 @@
             let task = window.allTasks.find(t => t.dbKey === dbKey);
             if(!task) return;
             let isMain = !task.taskId.includes('.');
-            window.modalState = { mode: 'EDIT', parentId: null, dbKey: dbKey, isMain: isMain };
+            
+            // Kiểm tra Main Task này có sub-task nào không (bỏ qua các task đã lưu trữ khác trạng thái)
+            let hasSubs = false;
+            if(isMain) {
+                hasSubs = window.allTasks.some(t =>
+                    t.company === task.company &&
+                    t.archived === task.archived &&
+                    t.taskId.startsWith(task.taskId + '.')
+                );
+            }
+            // Main Task KHÔNG có sub -> cho phép chỉnh trạng thái trực tiếp (coi như task đơn)
+            let allowStatusEdit = !isMain || !hasSubs;
+            
+            window.modalState = { mode: 'EDIT', parentId: null, dbKey: dbKey, isMain: isMain, allowStatusEdit: allowStatusEdit };
             
             document.getElementById('modalTitle').innerText = `Chỉnh sửa Task ${task.taskId}`;
             document.getElementById('m_name').value = task.name; document.getElementById('m_start').value = task.startDate; document.getElementById('m_due').value = task.dueDate; document.getElementById('m_status').value = task.status;
             
-            if(isMain) {
-                document.getElementById('statusControlBox').classList.add('hidden');
-                document.getElementById('mainTaskWarning').classList.remove('hidden');
-                document.getElementById('mainTaskWarning').classList.add('flex');
-            } else {
+            if(allowStatusEdit) {
+                // Task đơn (sub, hoặc main không có sub) -> hiện ô chọn trạng thái
                 document.getElementById('statusControlBox').classList.remove('hidden');
                 document.getElementById('mainTaskWarning').classList.add('hidden');
                 document.getElementById('mainTaskWarning').classList.remove('flex');
+            } else {
+                // Main task CÓ sub -> trạng thái tự tính, ẩn ô chọn + hiện cảnh báo
+                document.getElementById('statusControlBox').classList.add('hidden');
+                document.getElementById('mainTaskWarning').classList.remove('hidden');
+                document.getElementById('mainTaskWarning').classList.add('flex');
             }
             document.getElementById('taskModal').classList.remove('hidden');
             window.closeAllMenus();
@@ -1154,7 +1170,8 @@
             if(!nName || !nStart || !nDue) return alert('Vui lòng nhập đủ Tên và Ngày tháng!');
 
             let payload = { name: nName, startDate: nStart, dueDate: nDue };
-            if(!window.modalState.isMain) payload.status = nStatus;
+            // Lưu trạng thái nếu là task đơn (sub, hoặc main không có sub)
+            if(window.modalState.allowStatusEdit) payload.status = nStatus;
 
             if(window.modalState.mode === 'ADD') {
                 payload.company = window.currentTab; payload.taskId = getNextTaskId(window.currentTab, window.modalState.parentId); payload.archived = false;
