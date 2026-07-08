@@ -708,6 +708,14 @@
 
         const STATUS_MAP = { "Not Start": 0, "Pending": 25, "In Progress": 50, "Complete": 100 };
 
+        // Parse chuỗi "YYYY-MM-DD" thành ngày local lúc 00:00 (tránh lệch múi giờ UTC)
+        function parseLocalDate(str) {
+            if(!str) return null;
+            let parts = String(str).split('-');
+            if(parts.length !== 3) { let d = new Date(str); d.setHours(0,0,0,0); return d; }
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 0, 0, 0, 0);
+        }
+
         window.allTasks = [];
         window.currentTab = 'SVL';
         window.modalState = { mode: '', parentId: null, dbKey: null, isMain: false };
@@ -917,25 +925,31 @@
             let fStart = isDashboard ? document.getElementById('filterStart').value : null;
             let fEnd = isDashboard ? document.getElementById('filterEnd').value : null;
 
-            if(fStart) minDate = new Date(fStart);
-            if(fEnd) maxDate = new Date(fEnd);
+            if(fStart) minDate = parseLocalDate(fStart);
+            if(fEnd) maxDate = parseLocalDate(fEnd);
 
             if(!fStart || !fEnd) {
                 tasks.forEach(t => {
-                    let s = t.startDate ? new Date(t.startDate) : null;
-                    let d = t.dueDate ? new Date(t.dueDate) : null;
+                    let s = t.startDate ? parseLocalDate(t.startDate) : null;
+                    let d = t.dueDate ? parseLocalDate(t.dueDate) : null;
                     if(!fStart && s && s < minDate) minDate = s;
                     if(!fEnd && d && d > maxDate) maxDate = d;
                 });
             }
+            // Chuẩn hóa min/max về 00:00 để mọi ô Gantt khớp giờ với ngày task (tô đúng cả ngày due date)
+            minDate.setHours(0,0,0,0);
+            maxDate.setHours(0,0,0,0);
             if(minDate > maxDate) { minDate = new Date(); maxDate = new Date(); }
             
             if(today < minDate && !fStart) minDate = new Date(today);
             if(today > maxDate && !fEnd) maxDate = new Date(today);
+            minDate.setHours(0,0,0,0);
+            maxDate.setHours(0,0,0,0);
 
             let dateRange = [];
             let curr = new Date(minDate);
-            while(curr <= maxDate) { dateRange.push(new Date(curr)); curr.setDate(curr.getDate() + 1); }
+            curr.setHours(0,0,0,0);
+            while(curr <= maxDate) { let cd = new Date(curr); cd.setHours(0,0,0,0); dateRange.push(cd); curr.setDate(curr.getDate() + 1); }
 
             let showCompCol = (isDashboard || isDoneTab);
             let trDay = `<tr>`;
@@ -985,9 +999,9 @@
                 }
                 if(isMain) lastMainId = currentMainId;
 
-                let sDate = task.startDate ? new Date(task.startDate) : null;
+                let sDate = task.startDate ? parseLocalDate(task.startDate) : null;
                 if(sDate) sDate.setHours(0,0,0,0);
-                let dDate = task.dueDate ? new Date(task.dueDate) : null;
+                let dDate = task.dueDate ? parseLocalDate(task.dueDate) : null;
                 if(dDate) dDate.setHours(0,0,0,0);
                 
                 let daysCount = (sDate && dDate) ? Math.round((dDate - sDate) / 86400000) + 1 : '';
