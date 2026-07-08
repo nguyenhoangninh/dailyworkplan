@@ -574,6 +574,7 @@
             <!-- ZOOM CONTROLS -->
             <div class="zoom-controls">
                 <button class="zoom-btn" id="expandAllBtn" onclick="toggleExpandAll()" title="Mở rộng / Thu gọn tất cả" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); box-shadow: 0 2px 6px rgba(139,92,246,0.3);">⊕ Mở rộng</button>
+                <button class="zoom-btn" id="renumberBtn" onclick="renumberTasks()" title="Đánh số lại 1,2,3... theo danh sách hiện hành" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 2px 6px rgba(245,158,11,0.3);">↕ Đánh số lại</button>
                 <span style="color: #64748b; font-size: 11px; font-weight: 600;">Zoom:</span>
                 <button class="zoom-btn" onclick="zoomOut()">−</button>
                 <span class="zoom-display" id="zoomLevel">100%</span>
@@ -831,6 +832,11 @@
             if(eb) {
                 eb.style.display = (tabName === 'DASHBOARD') ? 'none' : '';
                 eb.innerHTML = '⊕ Mở rộng';
+            }
+            // Nút Đánh số lại chỉ hiện ở các tab công ty (không phải Dashboard/Đã lưu trữ)
+            let rb = document.getElementById('renumberBtn');
+            if(rb) {
+                rb.style.display = (tabName === 'DASHBOARD' || tabName === 'DONE') ? 'none' : '';
             }
             renderView();
         };
@@ -1114,8 +1120,80 @@
             window.closeAllMenus();
         }
 
+        // ĐÁNH SỐ LẠI: nén taskId của các công việc CHÍNH (chưa lưu trữ) về 1,2,3...
+        // liên tục theo thứ tự hiện hành. Sub-task đi theo main tương ứng (4.1 -> 1.1).
+        window.renumberTasks = function() {
+            let comp = window.currentTab;
+            if(comp === 'DASHBOARD' || comp === 'DONE') {
+                alert("Chức năng đánh số lại chỉ dùng cho các tab công ty (SVL, SGV, SVN, Cá nhân).");
+                return;
+            }
+            
+            // Lấy các main task chưa lưu trữ của tab hiện tại, theo thứ tự số hiện có
+            let mains = window.allTasks
+                .filter(t => t.company === comp && !t.taskId.includes('.') && t.archived !== true)
+                .sort((a, b) => parseInt(a.taskId) - parseInt(b.taskId));
+            
+            if(mains.length === 0) { alert("Không có công việc nào để đánh số lại."); return; }
+            
+            // Tính các thay đổi cần thiết
+            let updates = {};   // dbKey -> newTaskId
+            let changeCount = 0;
+            
+            mains.forEach((main, idx) => {
+                let newMainId = (idx + 1).toString();
+                if(main.taskId !== newMainId) {
+                    updates[main.dbKey] = newMainId;
+                    changeCount++;
+                }
+                // Đổi luôn các sub của main này
+                let subs = window.allTasks
+                    .filter(t => t.company === comp && t.archived !== true && t.taskId.startsWith(main.taskId + '.'))
+                    .sort((a, b) => parseInt(a.taskId.split('.')[1]) - parseInt(b.taskId.split('.')[1]));
+                
+                subs.forEach((sub, sIdx) => {
+                    let newSubId = newMainId + '.' + (sIdx + 1);
+                    if(sub.taskId !== newSubId) {
+                        updates[sub.dbKey] = newSubId;
+                        changeCount++;
+                    }
+                });
+            });
+            
+            if(changeCount === 0) {
+                alert("Số thứ tự đã liên tục, không cần đánh số lại.");
+                window.closeAllMenus();
+                return;
+            }
+            
+            if(!confirm(`Đánh số lại ${mains.length} công việc chính của tab ${comp}?\n(${changeCount} mã sẽ được cập nhật: 1, 2, 3...)\n\nLưu ý: thao tác này ghi đè mã công việc trong dữ liệu.`)) {
+                return;
+            }
+            
+            // Ghi đè taskId lên Firebase
+            let promises = [];
+            for(let dbKey in updates) {
+                promises.push(update(ref(db, 'tasks/' + dbKey), { taskId: updates[dbKey] }));
+            }
+            
+            // Reset trạng thái nhóm thu gọn của tab này (vì id đã đổi)
+            Object.keys(window.collapsedGroups).forEach(k => {
+                if(k.startsWith(comp + ':')) delete window.collapsedGroups[k];
+            });
+            window.groupsInitialized[comp] = false;
+            
+            Promise.all(promises).then(() => {
+                console.log('Đánh số lại xong:', changeCount, 'mã cập nhật');
+            }).catch(err => {
+                console.error('Lỗi khi đánh số lại:', err);
+                alert("Có lỗi khi đánh số lại. Vui lòng thử lại.");
+            });
+            
+            window.closeAllMenus();
+        };
+
         function getNextTaskId(company, parentId = null) {
-            let compTasks = window.allTasks.filter(t => t.company === company);
+            let compTasks = window.allTasks.filter(t => t.company === company && t.archived !== true);
             if(!parentId) { 
                 let mains = compTasks.filter(t => !t.taskId.includes('.'));
                 if(mains.length === 0) return "1";
