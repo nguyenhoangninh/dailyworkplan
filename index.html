@@ -552,110 +552,166 @@
             .flex.gap-4.text-xs { gap: 6px !important; font-size: 8px !important; flex-wrap: wrap; }
             .flex.flex-wrap.gap-4 { gap: 6px !important; padding: 8px !important; }
         }
-        /* ===== OVERVIEW DASHBOARD ===== */
-        .dash-grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 20px;
+        /* ===== OVERVIEW DASHBOARD (redesigned) ===== */
+        #overviewDashboard {
+            --ink: #111827;
+            --muted: #6b7280;
+            --faint: #9ca3af;
+            --line: #e8eaed;
+            --card: #ffffff;
+            --accent: #4f46e5;
+            --c-complete: #059669;
+            --c-progress: #d97706;
+            --c-pending: #e11d48;
+            --c-notstart: #9ca3af;
         }
-        .dash-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 18px;
-            padding: 22px;
-            box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+        .ov-anim { animation: ovRise 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+        .ov-anim:nth-child(2){animation-delay:.05s}
+        .ov-anim:nth-child(3){animation-delay:.10s}
+        .ov-anim:nth-child(4){animation-delay:.15s}
+        @keyframes ovRise { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        @media (prefers-reduced-motion: reduce){ .ov-anim{animation:none} }
+
+        .ov-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
+        .ov-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 22px 24px;
         }
-        .dash-card-title {
-            font-size: 13px;
-            font-weight: 800;
-            color: #1e293b;
-            letter-spacing: 0.02em;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .ov-eyebrow {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--faint);
         }
-        /* Hero card - số việc đang chạy */
-        .hero-card {
-            grid-column: span 4;
-            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-            color: #fff;
-            border: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 150px;
+        .ov-card-title {
+            font-size: 13px; font-weight: 700; color: var(--ink);
+            letter-spacing: 0.01em; display: flex; align-items: center; gap: 8px;
         }
-        .hero-label { font-size: 13px; font-weight: 600; opacity: 0.9; margin-bottom: 8px; }
-        .hero-number { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
-        .hero-sub { font-size: 12px; opacity: 0.85; margin-top: 10px; }
-        /* Mini stat cards */
-        .stat-card { grid-column: span 4; min-height: 150px; display: flex; flex-direction: column; justify-content: center; }
-        .stat-row { display: flex; gap: 14px; }
-        .stat-mini {
-            flex: 1;
-            background: #f8fafc;
-            border-radius: 14px;
-            padding: 16px;
-            text-align: center;
+        .ov-num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+        /* ---- HERO RIBBON ---- */
+        .ov-ribbon {
+            grid-column: span 12;
+            display: flex; align-items: stretch; justify-content: space-between;
+            gap: 32px; flex-wrap: wrap;
+            padding: 26px 28px;
         }
-        .stat-mini-num { font-size: 30px; font-weight: 800; line-height: 1; }
-        .stat-mini-label { font-size: 11px; color: #64748b; font-weight: 600; margin-top: 6px; }
-        /* Donut legend */
-        .donut-card { grid-column: span 5; }
-        .donut-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-        .donut-legend { flex: 1; min-width: 140px; }
-        .legend-item {
+        .ribbon-left { display: flex; flex-direction: column; justify-content: center; }
+        .ribbon-big {
+            font-size: 58px; font-weight: 800; line-height: 0.95; color: var(--ink);
+            letter-spacing: -0.03em; display: flex; align-items: baseline; gap: 12px;
+        }
+        .ribbon-big::before {
+            content: ""; width: 5px; height: 46px; border-radius: 3px;
+            background: var(--accent); align-self: center;
+        }
+        .ribbon-caption { font-size: 13px; color: var(--muted); margin-top: 10px; padding-left: 17px; }
+        .ribbon-caption b { color: var(--ink); font-weight: 700; }
+        .ribbon-stats { display: flex; align-items: center; gap: 0; }
+        .ribbon-stat { padding: 0 26px; text-align: center; border-left: 1px solid var(--line); }
+        .ribbon-stat:first-child { border-left: none; }
+        .ribbon-stat-num { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+        .ribbon-stat-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 7px; letter-spacing: 0.02em; }
+
+        /* ---- DONUT ---- */
+        .ov-donut { grid-column: span 5; }
+        .donut-wrap { display: flex; align-items: center; gap: 30px; margin-top: 24px; flex-wrap: wrap; }
+        .donut-ring { position: relative; width: 200px; height: 200px; flex-shrink: 0; }
+        .donut-svg { width: 100%; height: 100%; display: block; overflow: visible; animation: donutPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+        @keyframes donutPop {
+            from { opacity: 0; transform: scale(0.85) rotate(-12deg); }
+            to { opacity: 1; transform: scale(1) rotate(0); }
+        }
+        .donut-seg {
+            transform-origin: 50px 50px;
+            transition: stroke-width 0.2s ease, opacity 0.2s ease;
+        }
+        .donut-ring:hover .donut-seg { opacity: 0.38; }
+        .donut-ring .donut-seg:hover { opacity: 1; stroke-width: 15.5; }
+        @media (prefers-reduced-motion: reduce){ .donut-svg{ animation: none; } }
+        .donut-hole {
+            position: absolute; inset: 0; margin: auto; width: 124px; height: 124px;
+            border-radius: 50%; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .donut-hole-num { font-size: 40px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -0.02em; }
+        .donut-hole-label { font-size: 11px; color: var(--faint); font-weight: 600; margin-top: 5px; letter-spacing: 0.06em; text-transform: uppercase; }
+        .donut-legend { flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 2px; }
+        .lg-item {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px;
+            padding: 11px 0; border-bottom: 1px solid #f3f4f6; font-size: 13.5px;
         }
-        .legend-item:last-child { border-bottom: none; }
-        .legend-left { display: flex; align-items: center; gap: 9px; font-weight: 600; color: #475569; }
-        .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-        .legend-val { font-weight: 800; color: #1e293b; }
-        /* Upcoming / overdue list */
-        .upcoming-card { grid-column: span 7; }
-        .up-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; border-radius: 12px; margin-bottom: 8px;
-            background: #f8fafc; transition: background 0.15s;
+        .lg-item:last-child { border-bottom: none; }
+        .lg-left { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #475569; }
+        .lg-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+        .lg-val { font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+        .lg-pct { color: var(--faint); font-weight: 600; font-size: 12px; margin-left: 6px; }
+
+        /* ---- UPCOMING ---- */
+        .ov-upcoming { grid-column: span 7; }
+        .up-list { margin-top: 16px; display: flex; flex-direction: column; gap: 4px; }
+        .up-row {
+            display: flex; align-items: center; gap: 14px; padding: 11px 12px;
+            border-radius: 12px; transition: background 0.15s; cursor: default;
         }
-        .up-item:hover { background: #f1f5f9; }
-        .up-item.overdue { background: #fef2f2; }
-        .up-item.overdue:hover { background: #fee2e2; }
-        .up-icon {
-            width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; font-size: 16px;
+        .up-row:hover { background: #f8fafc; }
+        .up-rail { width: 3px; align-self: stretch; border-radius: 3px; flex-shrink: 0; }
+        .up-main { flex: 1; min-width: 0; }
+        .up-title { font-size: 13.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .up-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+        .up-chip { font-size: 9px; font-weight: 700; padding: 1px 7px; border-radius: 5px; letter-spacing: 0.03em; }
+        .up-when { text-align: right; flex-shrink: 0; }
+        .up-when-num { font-size: 15px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+        .up-when-unit { font-size: 10px; font-weight: 600; color: var(--faint); margin-top: 3px; letter-spacing: 0.02em; }
+        .ov-empty { text-align: center; color: var(--faint); padding: 32px 0; font-size: 13px; }
+
+        /* ---- CALENDAR ---- */
+        .ov-cal { grid-column: span 12; }
+        .cal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .cal-month { font-size: 15px; font-weight: 800; color: var(--ink); min-width: 150px; text-align: center; letter-spacing: -0.01em; }
+        .cal-btn {
+            width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line);
+            background: #fff; cursor: pointer; font-size: 15px; color: #475569;
+            transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center;
         }
-        .up-body { flex: 1; min-width: 0; }
-        .up-name { font-size: 13px; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .up-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
-        .up-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-        /* Calendar */
-        .cal-card { grid-column: span 12; }
-        .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .cal-nav-btn {
-            width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e2e8f0;
-            background: #fff; cursor: pointer; font-size: 14px; color: #475569; transition: all 0.15s;
+        .cal-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .cal-today-btn {
+            font-size: 12px; font-weight: 600; padding: 0 14px; height: 30px; width: auto;
+            color: var(--accent); border-color: #ddd6fe; background: #f5f3ff;
         }
-        .cal-nav-btn:hover { background: #f1f5f9; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: #94a3b8; padding: 6px 0; text-transform: uppercase; }
+        .cal-today-btn:hover { background: #ede9fe; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; }
+        .cal-dow { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--faint); padding: 4px 0 8px; letter-spacing: 0.05em; }
         .cal-cell {
-            min-height: 74px; border: 1px solid #f1f5f9; border-radius: 10px; padding: 6px;
-            font-size: 11px; overflow: hidden; background: #fff;
+            min-height: 82px; border: 1px solid #f1f3f5; border-radius: 11px; padding: 7px 8px;
+            background: #fff; transition: border-color 0.15s;
         }
-        .cal-cell.other { background: #fafafa; color: #cbd5e1; }
-        .cal-cell.today { border-color: #3b82f6; background: #eff6ff; }
-        .cal-date { font-weight: 700; color: #475569; margin-bottom: 3px; }
-        .cal-cell.today .cal-date { color: #2563eb; }
-        .cal-task {
-            font-size: 10px; padding: 2px 5px; border-radius: 5px; margin-bottom: 2px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;
+        .cal-cell:hover { border-color: var(--line); }
+        .cal-cell.other { background: #fafbfc; }
+        .cal-cell.other .cal-daynum { color: #d1d5db; }
+        .cal-cell.wknd { background: #fcfcfd; }
+        .cal-cell.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; background: #fbfaff; }
+        .cal-daynum { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
+        .cal-cell.today .cal-daynum { color: var(--accent); }
+        .cal-ev {
+            display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600;
+            padding: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #475569;
         }
-        .cal-more { font-size: 9px; color: #94a3b8; font-weight: 600; }
-        @media (max-width: 900px) {
-            .hero-card, .stat-card, .donut-card, .upcoming-card { grid-column: span 12; }
+        .cal-ev-dot { width: 6px; height: 6px; border-radius: 2px; flex-shrink: 0; }
+        .cal-ev-name { overflow: hidden; text-overflow: ellipsis; }
+        .cal-more { font-size: 9.5px; color: var(--faint); font-weight: 700; margin-top: 1px; }
+
+        @media (max-width: 920px) {
+            .ov-donut, .ov-upcoming { grid-column: span 12; }
+            .ov-ribbon { flex-direction: column; gap: 20px; }
+            .ribbon-stats { justify-content: space-between; }
+            .ribbon-stat { flex: 1; padding: 0 12px; }
+        }
+        @media (max-width: 560px) {
+            .ribbon-big { font-size: 46px; }
+            .cal-cell { min-height: 62px; padding: 5px; }
+            .cal-ev-name { display: none; }
+            .cal-ev { justify-content: center; }
         }
 
     </style>
@@ -1062,12 +1118,11 @@
             const container = document.getElementById('overviewDashboard');
             let mains = getOverviewTasks();
 
-            // Đếm theo trạng thái
             let counts = { 'Complete': 0, 'In Progress': 0, 'Pending': 0, 'Not Start': 0 };
             mains.forEach(m => { if(counts[m.status] !== undefined) counts[m.status]++; });
-            let total = mains.length || 1;
+            let totalTasks = mains.length;
+            let denom = totalTasks || 1;
 
-            // Đếm quá hạn (due < hôm nay & chưa hoàn thành)
             let today = new Date(); today.setHours(0,0,0,0);
             let overdueCount = mains.filter(m => {
                 if(m.status === 'Complete' || !m.dueDate) return false;
@@ -1075,7 +1130,6 @@
                 return d < today;
             }).length;
 
-            // Việc sắp/quá hạn: sắp xếp theo due date, chưa hoàn thành, lấy 6
             let upcoming = mains.filter(m => m.status !== 'Complete' && m.dueDate)
                 .sort((a,b) => parseLocalDate(a.dueDate) - parseLocalDate(b.dueDate))
                 .slice(0, 6);
@@ -1083,78 +1137,102 @@
             if(!window.overviewCalMonth) window.overviewCalMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
             container.innerHTML = `
-                <div class="dash-grid">
-                    ${renderHeroCard(counts['In Progress'], mains.length)}
-                    ${renderStatCard(counts, overdueCount)}
-                    ${renderDonutCard(counts, total)}
-                    ${renderUpcomingCard(upcoming, today)}
-                    ${renderCalendarCard(mains)}
+                <div class="ov-grid">
+                    ${renderRibbon(counts, overdueCount, totalTasks)}
+                    ${renderDonut(counts, denom, totalTasks)}
+                    ${renderUpcoming(upcoming, today)}
+                    ${renderCalendar(mains)}
                 </div>
             `;
         };
 
-        function renderHeroCard(inProgress, totalOpen) {
-            return `
-                <div class="dash-card hero-card">
-                    <div class="hero-label">🔥 Công việc đang chạy</div>
-                    <div class="hero-number">${inProgress}</div>
-                    <div class="hero-sub">trên tổng ${totalOpen} công việc đang mở</div>
-                </div>`;
+        function todayLabel() {
+            let dows = ['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+            let t = new Date();
+            return `${dows[t.getDay()]}, ${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${t.getFullYear()}`;
         }
 
-        function renderStatCard(counts, overdue) {
+        function renderRibbon(counts, overdue, total) {
+            let inProg = counts['In Progress'];
             return `
-                <div class="dash-card stat-card">
-                    <div class="stat-row">
-                        <div class="stat-mini">
-                            <div class="stat-mini-num" style="color:#10b981">${counts['Complete']}</div>
-                            <div class="stat-mini-label">Hoàn thành</div>
-                        </div>
-                        <div class="stat-mini">
-                            <div class="stat-mini-num" style="color:#94a3b8">${counts['Not Start']}</div>
-                            <div class="stat-mini-label">Chưa bắt đầu</div>
-                        </div>
+                <div class="ov-card ov-ribbon ov-anim">
+                    <div class="ribbon-left">
+                        <div class="ov-eyebrow" style="margin-bottom:12px">Tổng quan · ${todayLabel()}</div>
+                        <div class="ribbon-big ov-num">${inProg}<span style="font-size:20px;font-weight:600;color:var(--muted);letter-spacing:0">việc đang chạy</span></div>
+                        <div class="ribbon-caption">Trên tổng <b>${total}</b> công việc đang mở${overdue > 0 ? ` · <b style="color:var(--c-pending)">${overdue}</b> việc quá hạn cần xử lý` : ` · không có việc quá hạn`}</div>
                     </div>
-                    <div class="stat-row" style="margin-top:14px">
-                        <div class="stat-mini">
-                            <div class="stat-mini-num" style="color:#f43f5e">${counts['Pending']}</div>
-                            <div class="stat-mini-label">Tạm hoãn</div>
+                    <div class="ribbon-stats">
+                        <div class="ribbon-stat">
+                            <div class="ribbon-stat-num ov-num" style="color:var(--c-pending)">${overdue}</div>
+                            <div class="ribbon-stat-label">Quá hạn</div>
                         </div>
-                        <div class="stat-mini" style="${overdue > 0 ? 'background:#fef2f2' : ''}">
-                            <div class="stat-mini-num" style="color:#dc2626">${overdue}</div>
-                            <div class="stat-mini-label">Quá hạn</div>
+                        <div class="ribbon-stat">
+                            <div class="ribbon-stat-num ov-num" style="color:var(--c-complete)">${counts['Complete']}</div>
+                            <div class="ribbon-stat-label">Hoàn thành</div>
+                        </div>
+                        <div class="ribbon-stat">
+                            <div class="ribbon-stat-num ov-num" style="color:var(--faint)">${counts['Not Start']}</div>
+                            <div class="ribbon-stat-label">Chưa bắt đầu</div>
                         </div>
                     </div>
                 </div>`;
         }
 
-        function renderDonutCard(counts, total) {
-            // Vẽ donut bằng conic-gradient
+        function renderDonut(counts, denom, totalTasks) {
             let order = ['Complete', 'In Progress', 'Pending', 'Not Start'];
-            let acc = 0, stops = [], legend = '';
+            let legend = '';
+            let segs = [];
             order.forEach(st => {
                 let c = counts[st];
-                let pct = (c / total) * 100;
-                let start = acc, end = acc + pct;
-                if(c > 0) stops.push(`${STATUS_COLORS[st].dot} ${start}% ${end}%`);
-                acc = end;
+                let pct = (c / denom) * 100;
+                if(c > 0) segs.push({ st, c, pct, color: STATUS_COLORS[st].dot });
                 legend += `
-                    <div class="legend-item">
-                        <div class="legend-left"><span class="legend-dot" style="background:${STATUS_COLORS[st].dot}"></span>${STATUS_COLORS[st].label}</div>
-                        <div class="legend-val">${c} <span style="color:#94a3b8;font-weight:600">(${pct.toFixed(0)}%)</span></div>
+                    <div class="lg-item">
+                        <div class="lg-left"><span class="lg-dot" style="background:${STATUS_COLORS[st].dot}"></span>${STATUS_COLORS[st].label}</div>
+                        <div><span class="lg-val ov-num">${c}</span><span class="lg-pct ov-num">${pct.toFixed(0)}%</span></div>
                     </div>`;
             });
-            let gradient = stops.length ? `conic-gradient(${stops.join(', ')})` : '#f1f5f9';
-            let totalTasks = counts['Complete'] + counts['In Progress'] + counts['Pending'] + counts['Not Start'];
+
+            // SVG donut: các mảnh tách rời bằng khe hở, đầu mảnh bo tròn
+            const cx = 50, cy = 50, r = 39, sw = 13;
+            const C = 2 * Math.PI * r;
+            let arcs = '';
+            if(segs.length === 0) {
+                arcs = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#eef0f2" stroke-width="${sw}"/>`;
+            } else if(segs.length === 1) {
+                // Một trạng thái chiếm 100% -> vòng liền, không cần khe
+                arcs = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${segs[0].color}" stroke-width="${sw}"/>`;
+            } else {
+                const gapDeg = 7;                       // khe hở giữa các mảnh (độ)
+                const gapLen = (gapDeg / 360) * C;
+                let offset = 0;
+                segs.forEach((s, i) => {
+                    let slot = (s.pct / 100) * C;        // chiều dài phần chiếm chỗ
+                    let dash = Math.max(slot - gapLen, 2); // trừ khe, tối thiểu 2 để mảnh nhỏ vẫn hiện
+                    arcs += `<circle class="donut-seg" cx="${cx}" cy="${cy}" r="${r}" fill="none"
+                        stroke="${s.color}" stroke-width="${sw}" stroke-linecap="round"
+                        stroke-dasharray="${dash.toFixed(2)} ${(C - dash).toFixed(2)}"
+                        stroke-dashoffset="${(-offset).toFixed(2)}"/>`;
+                    offset += slot;
+                });
+            }
+
             return `
-                <div class="dash-card donut-card">
-                    <div class="dash-card-title">📊 Phân bổ trạng thái</div>
+                <div class="ov-card ov-donut ov-anim">
+                    <div class="ov-card-title">Phân bổ trạng thái</div>
                     <div class="donut-wrap">
-                        <div style="position:relative;width:150px;height:150px;flex-shrink:0">
-                            <div style="width:150px;height:150px;border-radius:50%;background:${gradient}"></div>
-                            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:92px;height:92px;background:#fff;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                                <div style="font-size:26px;font-weight:800;color:#1e293b;line-height:1">${totalTasks}</div>
-                                <div style="font-size:10px;color:#64748b;font-weight:600">công việc</div>
+                        <div class="donut-ring">
+                            <svg viewBox="0 0 100 100" class="donut-svg">
+                                <defs>
+                                    <filter id="donutShadow" x="-20%" y="-20%" width="140%" height="140%">
+                                        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#0f172a" flood-opacity="0.14"/>
+                                    </filter>
+                                </defs>
+                                <g filter="url(#donutShadow)" transform="rotate(-90 50 50)">${arcs}</g>
+                            </svg>
+                            <div class="donut-hole">
+                                <div class="donut-hole-num ov-num">${totalTasks}</div>
+                                <div class="donut-hole-label">công việc</div>
                             </div>
                         </div>
                         <div class="donut-legend">${legend}</div>
@@ -1162,59 +1240,60 @@
                 </div>`;
         }
 
-        function renderUpcomingCard(upcoming, today) {
-            let items = '';
+        function renderUpcoming(upcoming, today) {
+            let body;
             if(upcoming.length === 0) {
-                items = `<div style="text-align:center;color:#94a3b8;padding:24px;font-size:13px">Không có công việc nào sắp đến hạn 🎉</div>`;
+                body = `<div class="ov-empty">Không có việc nào sắp đến hạn. Mọi thứ trong tầm kiểm soát.</div>`;
             } else {
+                body = '<div class="up-list">';
                 upcoming.forEach(m => {
                     let d = parseLocalDate(m.dueDate); d.setHours(0,0,0,0);
                     let diff = Math.round((d - today) / 86400000);
-                    let isOverdue = diff < 0;
-                    let badgeTxt, badgeStyle, icon, iconBg;
-                    if(isOverdue) {
-                        badgeTxt = `Trễ ${Math.abs(diff)} ngày`; badgeStyle = 'background:#fee2e2;color:#dc2626';
-                        icon = '⚠️'; iconBg = '#fee2e2';
-                    } else if(diff === 0) {
-                        badgeTxt = 'Hôm nay'; badgeStyle = 'background:#fef3c7;color:#b45309';
-                        icon = '📌'; iconBg = '#fef3c7';
-                    } else if(diff <= 3) {
-                        badgeTxt = `Còn ${diff} ngày`; badgeStyle = 'background:#fef3c7;color:#b45309';
-                        icon = '⏰'; iconBg = '#fef3c7';
-                    } else {
-                        badgeTxt = `Còn ${diff} ngày`; badgeStyle = 'background:#dbeafe;color:#2563eb';
-                        icon = '📅'; iconBg = '#dbeafe';
-                    }
-                    items += `
-                        <div class="up-item ${isOverdue ? 'overdue' : ''}">
-                            <div class="up-icon" style="background:${iconBg}">${icon}</div>
-                            <div class="up-body">
-                                <div class="up-name">${m.name}</div>
-                                <div class="up-meta">${m.company} · Hạn: ${formatDMY(m.dueDate)}</div>
+                    let col = STATUS_COLORS[m.status] || STATUS_COLORS['Not Start'];
+                    let whenNum, whenUnit, whenColor;
+                    if(diff < 0) { whenNum = Math.abs(diff); whenUnit = 'ngày trễ'; whenColor = 'var(--c-pending)'; }
+                    else if(diff === 0) { whenNum = 'Hôm'; whenUnit = 'nay'; whenColor = 'var(--c-progress)'; }
+                    else { whenNum = diff; whenUnit = 'ngày nữa'; whenColor = diff <= 3 ? 'var(--c-progress)' : 'var(--faint)'; }
+                    body += `
+                        <div class="up-row">
+                            <div class="up-rail" style="background:${col.dot}"></div>
+                            <div class="up-main">
+                                <div class="up-title">${escapeHtml(m.name)}</div>
+                                <div class="up-sub">
+                                    <span class="up-chip" style="background:${col.bg};color:${col.text}">${col.label}</span>
+                                    <span>${m.company} · Hạn ${formatDMY(m.dueDate)}</span>
+                                </div>
                             </div>
-                            <div class="up-badge" style="${badgeStyle}">${badgeTxt}</div>
+                            <div class="up-when">
+                                <div class="up-when-num ov-num" style="color:${whenColor};${typeof whenNum==='string'?'font-size:13px':''}">${whenNum}</div>
+                                <div class="up-when-unit">${whenUnit}</div>
+                            </div>
                         </div>`;
                 });
+                body += '</div>';
             }
             return `
-                <div class="dash-card upcoming-card">
-                    <div class="dash-card-title">⏰ Việc sắp & quá hạn</div>
-                    ${items}
+                <div class="ov-card ov-upcoming ov-anim">
+                    <div class="ov-card-title">Việc cần chú ý</div>
+                    ${body}
                 </div>`;
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
         function formatDMY(str) {
             let d = parseLocalDate(str);
-            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
         }
 
-        function renderCalendarCard(mains) {
+        function renderCalendar(mains) {
             let cm = window.overviewCalMonth;
             let year = cm.getFullYear(), month = cm.getMonth();
             let today = new Date(); today.setHours(0,0,0,0);
             let monthNames = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
 
-            // Gom việc theo ngày due (trong tháng đang xem)
             let byDay = {};
             mains.forEach(m => {
                 if(!m.dueDate) return;
@@ -1225,8 +1304,7 @@
                 }
             });
 
-            let firstDay = new Date(year, month, 1);
-            let startWeekday = (firstDay.getDay() + 6) % 7; // Thứ 2 = 0
+            let startWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
             let daysInMonth = new Date(year, month + 1, 0).getDate();
             let prevMonthDays = new Date(year, month, 0).getDate();
 
@@ -1236,36 +1314,36 @@
 
             let totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
             for(let i = 0; i < totalCells; i++) {
-                let dayNum, cls = 'cal-cell', isCurrentMonth = true;
-                if(i < startWeekday) {
-                    dayNum = prevMonthDays - startWeekday + i + 1; cls += ' other'; isCurrentMonth = false;
-                } else if(i >= startWeekday + daysInMonth) {
-                    dayNum = i - startWeekday - daysInMonth + 1; cls += ' other'; isCurrentMonth = false;
-                } else {
+                let dayNum, cls = 'cal-cell', isCurrent = true, weekend = (i % 7 >= 5);
+                if(i < startWeekday) { dayNum = prevMonthDays - startWeekday + i + 1; cls += ' other'; isCurrent = false; }
+                else if(i >= startWeekday + daysInMonth) { dayNum = i - startWeekday - daysInMonth + 1; cls += ' other'; isCurrent = false; }
+                else {
                     dayNum = i - startWeekday + 1;
-                    let cellDate = new Date(year, month, dayNum);
-                    if(cellDate.getTime() === today.getTime()) cls += ' today';
+                    let cd = new Date(year, month, dayNum);
+                    if(cd.getTime() === today.getTime()) cls += ' today';
+                    else if(weekend) cls += ' wknd';
                 }
-                let taskHtml = '';
-                if(isCurrentMonth && byDay[dayNum]) {
-                    let dayTasks = byDay[dayNum];
-                    dayTasks.slice(0, 2).forEach(m => {
+                let evHtml = '';
+                if(isCurrent && byDay[dayNum]) {
+                    let list = byDay[dayNum];
+                    list.slice(0, 2).forEach(m => {
                         let col = STATUS_COLORS[m.status] || STATUS_COLORS['Not Start'];
-                        taskHtml += `<div class="cal-task" style="background:${col.bg};color:${col.text}" title="${m.name}">${m.name}</div>`;
+                        evHtml += `<div class="cal-ev" title="${escapeHtml(m.name)}"><span class="cal-ev-dot" style="background:${col.dot}"></span><span class="cal-ev-name">${escapeHtml(m.name)}</span></div>`;
                     });
-                    if(dayTasks.length > 2) taskHtml += `<div class="cal-more">+${dayTasks.length - 2} việc</div>`;
+                    if(list.length > 2) evHtml += `<div class="cal-more">+${list.length - 2} việc</div>`;
                 }
-                cells += `<div class="${cls}"><div class="cal-date">${dayNum}</div>${taskHtml}</div>`;
+                cells += `<div class="${cls}"><div class="cal-daynum ov-num">${dayNum}</div>${evHtml}</div>`;
             }
 
             return `
-                <div class="dash-card cal-card">
-                    <div class="cal-head">
-                        <div class="dash-card-title" style="margin-bottom:0">📅 Lịch công việc</div>
-                        <div style="display:flex;align-items:center;gap:12px">
-                            <button class="cal-nav-btn" onclick="changeCalMonth(-1)">‹</button>
-                            <span style="font-weight:800;font-size:14px;color:#1e293b;min-width:130px;text-align:center">${monthNames[month]} ${year}</span>
-                            <button class="cal-nav-btn" onclick="changeCalMonth(1)">›</button>
+                <div class="ov-card ov-cal ov-anim">
+                    <div class="cal-top">
+                        <div class="ov-card-title">Lịch công việc</div>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <button class="cal-btn cal-today-btn" onclick="goCalToday()">Hôm nay</button>
+                            <button class="cal-btn" onclick="changeCalMonth(-1)">‹</button>
+                            <span class="cal-month ov-num">${monthNames[month]} ${year}</span>
+                            <button class="cal-btn" onclick="changeCalMonth(1)">›</button>
                         </div>
                     </div>
                     <div class="cal-grid">${cells}</div>
@@ -1277,6 +1355,13 @@
             window.overviewCalMonth = new Date(cm.getFullYear(), cm.getMonth() + delta, 1);
             renderOverview();
         };
+
+        window.goCalToday = function() {
+            let t = new Date();
+            window.overviewCalMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+            renderOverview();
+        };
+
 
         window.renderView = function() {
             let isDashboard = (window.currentTab === 'DASHBOARD');
